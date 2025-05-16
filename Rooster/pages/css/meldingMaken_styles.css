@@ -1,0 +1,148 @@
+/* Pages/css/meldingMaken_styles.css */
+
+/* Stijlen specifiek voor de meldingMaken.aspx pagina */
+
+/* --- Thema Variabelen (consistent met hoofdpagina, maar met eigen scope) --- */
+body.light-theme, :root { /* :root voor fallback als class niet op body staat */
+    --form-bg-color: #ffffff;                     /* Tailwind white */
+    --form-text-color: #1f2937;                   /* Tailwind gray-800 */
+    --form-border-color: #e5e7eb;                 /* Tailwind gray-200 */
+    --form-label-color: #4b5563;                  /* Tailwind gray-600 */
+    --form-input-bg-color: #ffffff;               /* Tailwind white */
+    --form-input-border-color: #d1d5db;           /* Tailwind gray-300 */
+    --form-input-text-color: #1f2937;             /* Tailwind gray-800 */
+    --form-input-focus-border-color: #2563eb;     /* Tailwind blue-600 */
+    --form-input-focus-ring-color: rgba(59, 130, 246, 0.3); /* blue-300 met opacity */
+    --form-input-disabled-bg-color: #f3f4f6;      /* Tailwind gray-100 */
+    --form-input-disabled-text-color: #6b7280;    /* Tailwind gray-500 */
+    --form-button-secondary-bg-color: #e5e7eb;    /* Tailwind gray-200 */
+    --form-button-secondary-hover-bg-color: #d1d5db; /* Tailwind gray-300 */
+    --form-button-secondary-text-color: #374151;  /* Tailwind gray-700 */
+    --form-link-color: #2563eb;                   /* Tailwind blue-600 */
+    --form-link-hover-color: #1d4ed8;             /* Tailwind blue-700 */
+    --form-status-info-bg: #eff6ff;               /* blue-50 */
+    --form-status-info-text: #1e40af;             /* blue-800 */
+    --form-status-info-border: #bfdbfe;           /* blue-200 */
+    --form-status-success-bg: #f0fdf4;            /* green-50 */
+    --form-status-success-text: #166534;          /* green-800 */
+    --form-status-success-border: #bbf7d0;        /* green-200 */
+    --form-status-error-bg: #fef2f2;              /* red-50 */
+    --form-status-error-text: #991b1b;            /* red-800 */
+    --form-status-error-border: #fecaca;          /* red-200 */
+    --form-scrollbar-track-bg: #e5e7eb;           /* gray-200 */
+    --form-scrollbar-thumb-bg: #9ca3af;           /* gray-400 */
+    --form-scrollbar-thumb-hover-bg: #6b7280;     /* gray-500 */
+}
+
+body.dark-theme {
+    --form-bg-color: #1f2937;                     /* gray-800 */
+    --form-text-color: #f3f4f6;                   /* gray-100 */
+    --form-border-color: #374151;                 /* gray-700 */
+    --form-label-color: #d1d5db;                  /* gray-300 */
+    --form-input-bg-color: #374151;               /* gray-700 */
+    --form-input-border-color: #4b5563;           /* gray-600 */
+    --form-input-text-color: #f3f4f6;             /* gray-100 */
+    --form-input-focus-border-color: #60a5fa;     /* blue-400 */
+    --form-input-focus-ring-color: rgba(96, 165, 250, 0.3); /* blue-400 met opacity */
+    --form-input-disabled-bg-color: #4b5563;      /* gray-600 */
+    --form-input-disabled-text-color: #9ca3af;    /* gray-400 */
+    --form-button-secondary-bg-color: #4b5563;    /* gray-600 */
+    --form-button-secondary-hover-bg-color: #6b7280; /* gray-500 */
+    --form-button-secondary-text-color: #f3f4f6;  /* gray-100 */
+    --form-link-color: #60a5fa;                   /* blue-400 */
+    --form-link-hover-color: #93c5fd;             /* blue-300 */
+    --form-status-info-bg: #1e3a8a;               /* blue-800 */
+    --form-status-info-text: #bfdbfe;             /* blue-200 */
+    --form-status-info-border: #3b82f6;           /* blue-500 */
+    --form-status-success-bg: #166534;            /* green-800 */
+    --form-status-success-text: #bbf7d0;          /* green-200 */
+    --form-status-success-border: #4ade80;        /* green-500 */
+    --form-status-error-bg: #991b1b;              /* red-800 */
+    --form-status-error-text: #fecaca;            /* red-200 */
+    --form-status-error-border: #ef4444;          /* red-500 */
+    --form-scrollbar-track-bg: #2d3748;           /* gray-700 */
+    --form-scrollbar-thumb-bg: #4a5568;           /* gray-600 */
+    --form-scrollbar-thumb-hover-bg: #718096;     /* gray-500 */
+}
+
+/* Algemene pagina en container styling */
+#app-container {
+    background-color: var(--form-bg-color); /* Voor de achtergrond van de pagina zelf */
+}
+#app-container > div:first-child { /* De main form card */
+    background-color: var(--form-bg-color);
+    color: var(--form-text-color);
+    border: 1px solid var(--form-border-color);
+}
+h1, #form-subtitle { color: var(--form-text-color); }
+p, label, fieldset legend { color: var(--form-label-color); }
+
+/* Input velden, selects, textareas */
+.modal-form-input { /* Class toegevoegd in HTML */
+    background-color: var(--form-input-bg-color);
+    color: var(--form-input-text-color);
+    border: 1px solid var(--form-input-border-color);
+}
+.modal-form-input:focus {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    border-color: var(--form-input-focus-border-color);
+    box-shadow: 0 0 0 3px var(--form-input-focus-ring-color);
+}
+.modal-form-input.cursor-not-allowed { /* Readonly velden */
+    background-color: var(--form-input-disabled-bg-color);
+    color: var(--form-input-disabled-text-color);
+}
+.modal-form-input::placeholder { color: var(--placeholder-text-color); }
+
+/* Specifieke styling voor date/datetime-local input iconen */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+    filter: var(--form-calendar-picker-filter, none); /* Default geen filter */
+}
+body.dark-theme input[type="date"]::-webkit-calendar-picker-indicator,
+body.dark-theme input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+    --form-calendar-picker-filter: invert(0.8); /* Maakt icoon lichter in donker thema */
+}
+
+fieldset { border-color: var(--form-border-color); }
+
+/* Knoppen */
+#annuleren-button {
+    background-color: var(--form-button-secondary-bg-color);
+    color: var(--form-button-secondary-text-color);
+    border: 1px solid var(--form-input-border-color); /* Subtiele border */
+}
+#annuleren-button:hover {
+    background-color: var(--form-button-secondary-hover-bg-color);
+}
+#indienen-button { /* Primaire knop, Tailwind classes regelen dit al goed */ }
+
+/* Status Bericht */
+#status-bericht.bg-blue-600 { /* Info */
+    background-color: var(--form-status-info-bg) !important;
+    color: var(--form-status-info-text) !important;
+    border: 1px solid var(--form-status-info-border) !important;
+}
+#status-bericht.bg-green-600 { /* Success */
+    background-color: var(--form-status-success-bg) !important;
+    color: var(--form-status-success-text) !important;
+    border: 1px solid var(--form-status-success-border) !important;
+}
+#status-bericht.bg-red-600 { /* Error */
+    background-color: var(--form-status-error-bg) !important;
+    color: var(--form-status-error-text) !important;
+    border: 1px solid var(--form-status-error-border) !important;
+}
+
+/* Footer */
+footer { color: var(--form-label-color); } /* Gebruik label kleur voor consistentie */
+footer a { color: var(--form-link-color); }
+footer a:hover { color: var(--form-link-hover-color); }
+
+/* Scrollbar */
+::-webkit-scrollbar-track { background: var(--form-scrollbar-track-bg); }
+::-webkit-scrollbar-thumb { background: var(--form-scrollbar-thumb-bg); }
+::-webkit-scrollbar-thumb:hover { background: var(--form-scrollbar-thumb-hover-bg); }
+
+.hidden { display: none !important; }

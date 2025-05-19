@@ -5,13 +5,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Verlofrooster</title>
+    <link rel="icon" type="image/svg+xml" href="Icoon/favicon.svg">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/verlofrooster_styles.css">
     <link rel="stylesheet" href="css/profielKaart.css">
     <link rel="stylesheet" href="css/verlofRooster_tour.css">
     <link rel="stylesheet" href="css/enhanced_styles.css">
-    <link rel="stylesheet" href="css/weekend_fixes.css">
+    <!-- <link rel="stylesheet" href="css/weekend_fixes.css"> MOVED TO verlofrooster_styles.css -->
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -56,14 +57,14 @@
             <div class="flex justify-between items-center">
                 <div class="flex items-center space-x-3 md:space-x-4">
                     <h1 id="app-title" class="text-lg sm:text-xl font-bold text-gray-800">Teamverlofrooster</h1>
-                    <button id="melding-button" title="Nieuwe melding maken (fout, suggestie)"
+                    <a id="melding-button" href="pages/meldingMaken.aspx" title="Nieuwe melding maken (fout, suggestie)"
                         class="text-gray-600 hover:text-blue-600 hover:bg-gray-100 py-1.5 px-2 md:py-2 md:px-3 rounded-lg flex items-center space-x-1 transition-colors border border-gray-200 hover:border-blue-300 shadow-sm">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                         </svg>
                         <span class="sm:inline ml-1">Melding</span>
-                    </button>
+                    </a>
                     <div id="notification-placeholder" class="text-xs sm:text-sm text-gray-500 italic"></div>
                 </div>
                 <div class="flex items-center space-x-2 md:space-x-3">

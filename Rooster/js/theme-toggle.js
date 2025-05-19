@@ -54,15 +54,21 @@ function updateTailwindClassesForTheme(isDarkMode) {
             darkClasses: ['bg-gray-900', 'text-gray-100']
         },
         {
+            selector: '#app-container',
+            lightClasses: ['bg-gray-50'],
+            darkClasses: ['bg-gray-900']
+        },
+        {
             selector: '#app-header',
-            lightClasses: ['bg-white', 'shadow-md'],
-            darkClasses: ['bg-gray-800', 'shadow-md']
+            lightClasses: ['bg-white', 'shadow-md', 'border-gray-200'],
+            darkClasses: ['bg-gray-800', 'shadow-md', 'border-gray-700']
         },
         {
             selector: '#app-title',
             lightClasses: ['text-gray-800'],
             darkClasses: ['text-white']
-        },        {
+        },
+        {
             selector: '#legenda-section',
             lightClasses: ['bg-white', 'border-gray-200'],
             darkClasses: ['bg-gray-800', 'border-gray-700']
@@ -79,13 +85,13 @@ function updateTailwindClassesForTheme(isDarkMode) {
         },
         {
             selector: '.nav-button',
-            lightClasses: ['text-gray-600', 'hover:bg-gray-200'],
-            darkClasses: ['text-gray-300', 'hover:bg-gray-700']
+            lightClasses: ['text-gray-600', 'hover:bg-gray-200', 'border-gray-200'],
+            darkClasses: ['text-gray-300', 'hover:bg-gray-700', 'border-gray-600']
         },
         {
             selector: '.nav-button-alt',
-            lightClasses: ['bg-gray-200', 'hover:bg-gray-300', 'text-gray-700'],
-            darkClasses: ['bg-gray-700', 'hover:bg-gray-600', 'text-gray-200']
+            lightClasses: ['bg-gray-200', 'hover:bg-gray-300', 'text-gray-700', 'border-gray-300'],
+            darkClasses: ['bg-gray-700', 'hover:bg-gray-600', 'text-gray-200', 'border-gray-600']
         },
         {
             selector: '.filter-input',
@@ -101,7 +107,8 @@ function updateTailwindClassesForTheme(isDarkMode) {
             selector: '#modal-title',
             lightClasses: ['text-gray-800'],
             darkClasses: ['text-white']
-        },        {
+        },
+        {
             selector: '#modal-content',
             lightClasses: ['text-gray-700'],
             darkClasses: ['text-gray-300']
@@ -120,7 +127,8 @@ function updateTailwindClassesForTheme(isDarkMode) {
             selector: '.dropdown-item',
             lightClasses: ['text-gray-700', 'hover:bg-gray-100'],
             darkClasses: ['text-gray-300', 'hover:bg-gray-700']
-        },        {
+        },
+        {
             selector: '#rooster-grid-container',
             lightClasses: ['bg-gray-100', 'border-gray-300'],
             darkClasses: ['bg-gray-700', 'border-gray-600']
@@ -134,6 +142,115 @@ function updateTailwindClassesForTheme(isDarkMode) {
             selector: '#rooster-data-rows',
             lightClasses: ['divide-gray-300'],
             darkClasses: ['divide-gray-600']
+        },
+        // New elements from the files
+        {
+            selector: '.rooster-header-medewerker',
+            lightClasses: ['bg-gray-100', 'text-gray-700'],
+            darkClasses: ['bg-gray-800', 'text-gray-200']
+        },
+        {
+            selector: '#sort-medewerker-button',
+            lightClasses: ['hover:bg-gray-300'],
+            darkClasses: ['hover:bg-gray-700']
+        },
+        {
+            selector: '#melding-button, #admin-instellingen-button, #beheer-centrum-button, #help-button',
+            lightClasses: ['text-gray-600', 'hover:text-blue-600', 'hover:bg-gray-100', 'border-gray-200', 'hover:border-blue-300'],
+            darkClasses: ['text-gray-300', 'hover:text-blue-400', 'hover:bg-gray-700', 'border-gray-600', 'hover:border-blue-500']
+        },
+        {
+            selector: '#notification-placeholder',
+            lightClasses: ['text-gray-500'],
+            darkClasses: ['text-gray-400']
+        },
+        {
+            selector: '.view-toggle-group',
+            lightClasses: ['bg-gray-200', 'border-gray-300'],
+            darkClasses: ['bg-gray-700', 'border-gray-600']
+        },
+        {
+            selector: '.view-toggle-button:not(.bg-blue-500)',
+            lightClasses: ['text-gray-700', 'hover:bg-gray-300', 'hover:text-gray-900'],
+            darkClasses: ['text-gray-300', 'hover:bg-gray-600', 'hover:text-white']
+        },
+        {
+            selector: '#fab-menu',
+            lightClasses: ['bg-white', 'border-gray-200'],
+            darkClasses: ['bg-gray-800', 'border-gray-700']
+        },
+        {
+            selector: '.fab-menu-item',
+            lightClasses: ['text-gray-700', 'hover:bg-gray-100'],
+            darkClasses: ['text-gray-300', 'hover:bg-gray-700']
+        },
+        {
+            selector: '.rooster-cel-vandaag',
+            lightClasses: ['bg-blue-50', 'border-blue-300'],
+            darkClasses: ['bg-blue-900', 'bg-opacity-20', 'border-blue-700']
+        },
+        {
+            selector: '.weekend-cell',
+            lightClasses: ['bg-gray-100'],
+            darkClasses: ['bg-gray-800']
+        },
+        {
+            selector: '#registratie-melding',
+            lightClasses: ['bg-yellow-100', 'text-yellow-700', 'border-yellow-500'],
+            darkClasses: ['bg-yellow-900', 'bg-opacity-20', 'text-yellow-500', 'border-yellow-600']
+        },
+        {
+            selector: '#start-registratie-button',
+            lightClasses: ['bg-yellow-500', 'hover:bg-yellow-600'],
+            darkClasses: ['bg-yellow-600', 'hover:bg-yellow-700']
+        },
+        {
+            selector: '.modal-button-secondary',
+            lightClasses: ['bg-gray-200', 'hover:bg-gray-300', 'text-gray-700'],
+            darkClasses: ['bg-gray-700', 'hover:bg-gray-600', 'text-gray-300']
+        },
+        {
+            selector: '#footer-text',
+            lightClasses: ['text-gray-500'],
+            darkClasses: ['text-gray-400']
+        },
+        {
+            selector: '.rooster-bottom-line',
+            lightClasses: ['bg-gray-300'],
+            darkClasses: ['bg-gray-600']
+        },
+        {
+            selector: '.selected-row',
+            lightClasses: ['bg-blue-100', 'text-blue-800'],
+            darkClasses: ['bg-blue-900', 'bg-opacity-25', 'text-blue-200']
+        },
+        {
+            selector: '.rooster-cel-tag[data-type="VKD"]',
+            lightClasses: ['shadow-sm'],
+            darkClasses: ['shadow-md']
+        },
+        {
+            selector: '.rooster-cel-tag[data-type="VWM"]',
+            lightClasses: ['shadow-sm'],
+            darkClasses: ['shadow-md']
+        },
+
+                {
+            selector: '.rooster-cel-tag[data-type="ZTV"]',
+            lightClasses: ['shadow-sm'],
+            darkClasses: ['shadow-md']
+        },
+       
+        {
+            selector: '.rooster-cel-medewerker .flex.flex-col',
+            lightClasses: ['text-black'],
+            darkClasses: ['text-white']
+        }
+    ];
+        {
+            selector: '.rooster-cel-tag[data-type="ZTV"]',
+            lightClasses: ['shadow-sm'],
+            darkClasses: ['shadow-md']
         }
     ];
     
@@ -153,6 +270,48 @@ function updateTailwindClassesForTheme(isDarkMode) {
                     el.classList.add(cls);
                 });
             });
+        }
+    });
+    
+    // Handle special cases that might need additional processing
+    handleSpecialCases(isDarkMode);
+}
+
+/**
+ * Handle special theme cases that require more than just class toggling
+ * @param {boolean} isDarkMode - Whether dark mode is active
+ */
+function handleSpecialCases(isDarkMode) {
+    // Handle focus ring styling
+    document.documentElement.style.setProperty(
+        '--focus-ring-color', 
+        isDarkMode ? 'rgba(96, 165, 250, 0.6)' : 'rgba(59, 130, 246, 0.5)'
+    );
+    
+    // Handle grid lines
+    document.documentElement.style.setProperty(
+        '--grid-line-color',
+        isDarkMode ? 'var(--grid-line-color-dark)' : 'var(--grid-line-color-light)'
+    );
+    
+    // Handle selected row styles
+    document.documentElement.style.setProperty(
+        '--selected-row-bg',
+        isDarkMode ? 'var(--selected-row-bg-dark)' : 'var(--selected-row-bg-light)'
+    );
+    
+    document.documentElement.style.setProperty(
+        '--selected-row-text',
+        isDarkMode ? 'var(--selected-row-text-dark)' : 'var(--selected-row-text-light)'
+    );
+    
+    // Update any SVG colors if needed
+    const svgElements = document.querySelectorAll('.nav-button svg, .nav-button-alt svg');
+    svgElements.forEach(svg => {
+        if (isDarkMode) {
+            svg.style.filter = 'drop-shadow(0px 1px 1px rgba(0, 0, 0, 0.5))';
+        } else {
+            svg.style.filter = 'none';
         }
     });
 }

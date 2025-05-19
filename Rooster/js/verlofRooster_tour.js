@@ -11,8 +11,14 @@ function initializeTourSteps() {
     tourSteps = [
         {
             element: '#app-title',
-            title: 'Applicatietitel',
-            content: 'Welkom bij het Teamverlofrooster! Deze applicatie is gebouwd zodat makkelijk je verlofaanvragen intern kan doorgeven. Dit verlofrooster is niet verbonden aan P-direkt, dus alle wijzigingen die je hier doorgeeft zullen ook in P-direkt moeten worden verwerkt.',
+            title: 'Verlofrooster',
+            content: 'Welkom bij het Teamverlofrooster! In deze applicatie kun je je verlof en compensatie-uren doorgeven aan je teamleider/senior.',
+            position: 'bottom'
+        },
+        {
+            element: '#app-title',
+            title: 'Verlofrooster',
+            content: 'Let op: deze applicatie vervangt het doorgeven van je verlof/compensatie-uren via P-Direkt niet.',
             position: 'bottom'
         },
         {
@@ -222,7 +228,7 @@ function showTourStep(index) {
     document.getElementById('tour-popup-title').textContent = step.title;
     document.getElementById('tour-popup-content').textContent = step.content;
     document.getElementById('tour-step-indicator').textContent = `Stap ${index + 1} van ${tourSteps.length}`;
-    
+
     requestAnimationFrame(() => {
         positionPopup(popup, targetElement, step.position);
     });
@@ -250,7 +256,7 @@ function showPreviousTourStep() {
 function startInteractiveTour() {
     if (document.getElementById(TOUR_POPUP_ID) && document.getElementById(TOUR_POPUP_ID).style.display !== 'none') {
         // console.log("Tour is already active.");
-        return; 
+        return;
     }
     // console.log('Attempting to start tour...');
     if (tourSteps.length === 0) {
@@ -263,7 +269,7 @@ function startInteractiveTour() {
     }
     currentTourStepIndex = 0;
     createTourOverlay();
-    createTourPopup(); 
+    createTourPopup();
     showTourStep(0);
     // console.log('Interactive tour started.');
 }
@@ -278,11 +284,29 @@ function endInteractiveTour() {
     // console.log('Interactive tour ended.');
 }
 
+function highlightElement(selector) {
+    const element = document.querySelector(selector);
+    if (element) {
+        // Add the highlight class
+        element.classList.add('tour-highlighted-element');
+
+        // Create a clone if needed to bring above overlay
+        const elementRect = element.getBoundingClientRect();
+
+        // Scroll into view if needed
+        if (elementRect.top < 0 || elementRect.bottom > window.innerHeight ||
+            elementRect.left < 0 || elementRect.right > window.innerWidth) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+        }
+    }
+    return element;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const helpButton = document.getElementById('help-button');
     if (helpButton) {
         helpButton.addEventListener('click', (event) => {
-            event.preventDefault(); 
+            event.preventDefault();
             // console.log('Help button clicked, starting tour...');
             startInteractiveTour();
         });

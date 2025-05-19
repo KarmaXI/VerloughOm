@@ -63,17 +63,152 @@ function showProfileCard(medewerker, targetElement) {
 
         const profielFotoFinalUrl = getProfilePhotoUrl(medewerker, 'M'); // Use the new utility function with size 'M'
         
-        // Gebruik p-2 zoals in het originele bestand voor de content div
-        // De classes bg-white rounded-lg shadow-xl border border-gray-200 zijn toegevoegd voor styling.
+        let horenStatusHTML = '';
+        if (medewerker.hasOwnProperty('Horen') && typeof medewerker.Horen === 'boolean') {
+            if (medewerker.Horen === true) {
+                horenStatusHTML = `<p class="text-xs text-green-600 text-center mb-2">Beschikbaar om gepland te worden voor het horen</p>`;
+            } else {
+                horenStatusHTML = `<p class="text-xs text-red-600 text-center mb-2">Geen beschikbaarheid om gepland te worden voor het horen</p>`;
+            }
+        }
+        
+        // Badge SVGs - replace with your actual SVG content or paths
+        const teamleiderSVG = medewerker.Teamleider ? `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" class="inline-block mr-1 text-blue-500" title="Teamleider"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"></path></svg>` : '';
+        const seniorSVG = medewerker.Senior ? `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" class="inline-block mr-1 text-green-500" title="Senior"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg>` : '';
+        
+        let badgesHTML = '';
+        if (teamleiderSVG || seniorSVG) {
+            badgesHTML = `<div class="text-center mt-2 mb-1">${teamleiderSVG}${seniorSVG}</div>`;
+        }
+
+        // Werkuren - Placeholder, needs integration with actual data source
+        // This is a simplified example. You'll need to fetch and format this properly.
+        let werkurenHTML = '<div class="mt-3 pt-2 border-t border-gray-200">';
+        werkurenHTML += '<h4 class="text-xs font-semibold text-gray-500 mb-1">Werkuren:</h4>';
+        
+        let werkurenContent = '<p class="text-xs text-gray-600">Niet beschikbaar</p>'; // Default
+        
+        // Check if alleUrenPerWeekItems is available and the medewerker has a username
+        if (typeof alleUrenPerWeekItems !== 'undefined' && alleUrenPerWeekItems && alleUrenPerWeekItems.length > 0 && medewerker.Username) {
+            // Normalize the current medewerker's username
+            const genormaliseerdeMedewerkerUsername = typeof window.trimLoginNaamPrefixMachtigingen === 'function' 
+                ? window.trimLoginNaamPrefixMachtigingen(medewerker.Username) 
+                : medewerker.Username;
+            console.log(`[WerkurenDebug] User: ${medewerker.Naam}, NormalizedUsername: ${genormaliseerdeMedewerkerUsername}`);
+
+            // Filter schedules for the current medewerker and ensure they are currently effective
+            const medewerkerSchedules = alleUrenPerWeekItems
+                .filter(upw => {
+                    // Normalize the MedewerkerID from the schedule item
+                    const scheduleMedewerkerID = typeof window.trimLoginNaamPrefixMachtigingen === 'function' 
+                        ? window.trimLoginNaamPrefixMachtigingen(upw.MedewerkerID) 
+                        : upw.MedewerkerID;
+                    
+                    const effectiveDate = typeof getUrenPerWeekEffectiveDate === 'function' 
+                        ? getUrenPerWeekEffectiveDate(upw) 
+                        : new Date(upw.Ingangsdatum || upw.Startdatum);
+                    
+                    const isMatch = scheduleMedewerkerID === genormaliseerdeMedewerkerUsername;
+                    const isActive = effectiveDate && effectiveDate <= new Date();
+                    // Optional: Log details for each schedule item being checked if needed for deeper debugging
+                    // console.log(`[WerkurenDebug] User: ${medewerker.Naam}, Checking UPW item ID: ${upw.Id || 'N/A'}, ScheduleMedID: ${scheduleMedewerkerID}, Match: ${isMatch}, EffectiveDate: ${effectiveDate}, IsActive: ${isActive}`);
+                    return isMatch && isActive;
+                })
+                .sort((a, b) => {
+                    // Sort by effective date in descending order to get the latest schedule first
+                    const dateA = typeof getUrenPerWeekEffectiveDate === 'function' ? getUrenPerWeekEffectiveDate(a) : new Date(a.Ingangsdatum || a.Startdatum);
+                    const dateB = typeof getUrenPerWeekEffectiveDate === 'function' ? getUrenPerWeekEffectiveDate(b) : new Date(b.Ingangsdatum || b.Startdatum);
+                    return dateB - dateA;
+                });
+
+            if (medewerkerSchedules.length > 0) {
+                const latestSchedule = medewerkerSchedules[0]; // Get the most current active schedule
+                console.log(`[WerkurenDebug] User: ${medewerker.Naam}, Found ${medewerkerSchedules.length} active schedule(s). Latest schedule ID: ${latestSchedule.Id || 'N/A'}, Ingangsdatum: ${latestSchedule.Ingangsdatum || latestSchedule.Startdatum}`);
+
+                const daysConfig = [
+                    { label: 'Ma', startKey: 'MaandagStart', endKey: 'MaandagEind' },
+                    { label: 'Di', startKey: 'DinsdagStart', endKey: 'DinsdagEind' },
+                    { label: 'Wo', startKey: 'WoensdagStart', endKey: 'WoensdagEind' },
+                    { label: 'Do', startKey: 'DonderdagStart', endKey: 'DonderdagEind' }, // Assuming field name based on pattern
+                    { label: 'Vr', startKey: 'VrijdagStart', endKey: 'VrijdagEind' }       // Assuming field name based on pattern
+                ];
+
+                let tableRowsHTML = '';
+                let hasAnyData = false; // To check if any day has actual start or end times
+
+                daysConfig.forEach(day => {
+                    const startTimeValue = latestSchedule[day.startKey];
+                    const endTimeValue = latestSchedule[day.endKey];
+
+                    const displayStart = (startTimeValue !== null && startTimeValue !== undefined && String(startTimeValue).trim() !== "") 
+                                       ? String(startTimeValue).trim() 
+                                       : '-';
+                    const displayEnd = (endTimeValue !== null && endTimeValue !== undefined && String(endTimeValue).trim() !== "") 
+                                     ? String(endTimeValue).trim() 
+                                     : '-';
+
+                    if (displayStart !== '-' || displayEnd !== '-') {
+                        hasAnyData = true;
+                    }
+
+                    tableRowsHTML += `<tr class="border-t border-gray-100">
+                                        <td class="py-0.5 pr-2">${day.label}</td>
+                                        <td class="py-0.5">${displayStart}</td>
+                                        <td class="py-0.5">${displayEnd}</td>
+                                      </tr>`;
+                });
+                
+                if (!hasAnyData) {
+                    werkurenContent = '<p class="text-xs text-gray-600">Geen specifieke start- of eindtijden gevonden voor het huidige rooster.</p>';
+                    console.warn(`[WerkurenDebug] User: ${medewerker.Naam}, Active schedule found (ID: ${latestSchedule.Id || 'N/A'}) but no start/end time values were extracted. LatestSchedule object:`, JSON.stringify(latestSchedule));
+                } else {
+                    werkurenContent = `
+                        <table class="text-xs w-full mt-1">
+                            <thead>
+                                <tr class="text-left">
+                                    <th class="pb-1 font-semibold text-gray-500">Dag</th>
+                                    <th class="pb-1 font-semibold text-gray-500">Start</th>
+                                    <th class="pb-1 font-semibold text-gray-500">Einde</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${tableRowsHTML}
+                            </tbody>
+                        </table>`;
+                }
+            } else {
+                werkurenContent = '<p class="text-xs text-gray-600">Geen actueel werkrooster gevonden.</p>';
+                console.warn(`[WerkurenDebug] User: ${medewerker.Naam}, No active work schedule found. Total UrenPerWeek items checked: ${alleUrenPerWeekItems.length}`);
+            }
+        } else if (medewerker && !medewerker.Username) { // Added medewerker check here
+            werkurenContent = '<p class="text-xs text-gray-500">Werkuren niet beschikbaar (geen gebruikersnaam).</p>';
+        } else {
+            werkurenContent = '<p class="text-xs text-gray-500">Werkuren data (alleUrenPerWeekItems) niet geladen of medewerker info onvolledig.</p>';
+        }
+        
+        werkurenHTML += werkurenContent;
+        werkurenHTML += '</div>';
+
         contentHtml = `
-            <div class="profile-card-content p-2 bg-white rounded-lg shadow-xl border border-gray-200">
+            <div class="profile-card-content p-4 bg-white rounded-lg shadow-xl border border-gray-200 w-64">
+                <h3 class="text-lg font-semibold text-center text-gray-800 mb-2">${medewerker.Naam || 'N/A'}</h3>
                 <img src="${profielFotoFinalUrl}" 
                      alt="Profielfoto van ${medewerker.Naam || 'medewerker'}" 
-                     class="w-20 h-20 rounded-full mx-auto mb-3 border-2 border-gray-300 object-cover" 
+                     class="w-20 h-20 rounded-full mx-auto mb-2 border-2 border-gray-300 object-cover" 
                      onerror="this.onerror=null; this.src='Icoon/default-profile.svg';">
-                <h3 class="text-lg font-semibold text-center text-gray-800">${medewerker.Naam || 'N/A'}</h3>
-                <p class="text-sm text-gray-600 text-center">${medewerker.E_x002d_mail || 'E-mail niet beschikbaar'}</p>
-                <p class="text-sm text-gray-600 text-center mt-1">Horen: ${medewerker.Horen === true ? 'Ja' : (medewerker.Horen === false ? 'Nee' : 'N/B')}</p>
+                ${horenStatusHTML}
+                ${badgesHTML}
+                <p class="text-sm text-gray-600 text-center truncate" title="${medewerker.Functie || ''}">${medewerker.Functie || 'Functie niet beschikbaar'}</p>
+                
+                <div class="mt-3 pt-2 border-t border-gray-200">
+                    <p class="text-xs text-gray-500">E-mail:</p>
+                    <p class="text-sm text-gray-700 truncate" title="${medewerker.E_x002d_mail || ''}">${medewerker.E_x002d_mail || 'Niet beschikbaar'}</p>
+                </div>
+                <div class="mt-1">
+                    <p class="text-xs text-gray-500">Telefoon:</p>
+                    <p class="text-sm text-gray-700">${medewerker.Telefoonnummer || medewerker.Telefoon || 'Niet beschikbaar'}</p>
+                </div>
+                ${werkurenHTML}
             </div>
         `;
     }

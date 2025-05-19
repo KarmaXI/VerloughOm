@@ -424,14 +424,58 @@ function updateLegenda() {
     compensatieLegendaSpan.className = "flex items-center text-xs sm:text-sm";
     const compensatieKleurBlok = document.createElement('span');
     compensatieKleurBlok.className = "w-2.5 h-2.5 md:w-3 md:h-3 rounded-sm mr-1.5 flex-shrink-0";
-    compensatieKleurBlok.style.backgroundColor = '#107c10';
-    compensatieLegendaSpan.appendChild(compensatieKleurBlok);
-    compensatieLegendaSpan.appendChild(document.createTextNode("Compensatie "));
-    const clockIcon = document.createElement('span');
-    clockIcon.innerHTML = '&#x23F0;';
-    clockIcon.className = "ml-1";
-    compensatieLegendaSpan.appendChild(clockIcon);
+    // compensatieKleurBlok.style.backgroundColor = '#107c10'; // Kleurblok niet meer nodig als we icoon gebruiken
+    // compensatieLegendaSpan.appendChild(compensatieKleurBlok);
+    
+    // Gebruik het SVG icoon voor Compensatie in de legenda
+    const compensatieIconImg = document.createElement('img');
+    compensatieIconImg.src = 'Icoon/CompensatieUren.svg'; // Gebruik lokaal pad
+    compensatieIconImg.alt = 'Compensatie';
+    compensatieIconImg.className = 'w-3 h-3 md:w-3.5 md:h-3.5 mr-1.5 flex-shrink-0'; // Aangepaste grootte voor legenda
+    compensatieLegendaSpan.appendChild(compensatieIconImg);
+    
+    compensatieLegendaSpan.appendChild(document.createTextNode("Compensatie"));
+    // Clock icon is niet meer nodig als we het SVG icoon gebruiken
+    // const clockIcon = document.createElement('span');
+    // clockIcon.innerHTML = '&#x23F0;';
+    // clockIcon.className = "ml-1";
+    // compensatieLegendaSpan.appendChild(clockIcon);
     container.appendChild(compensatieLegendaSpan);
+
+    // Legenda voor Horen Ja (Groen oor)
+    const horenJaLegendaSpan = document.createElement('span');
+    horenJaLegendaSpan.className = "flex items-center text-xs sm:text-sm";
+    const horenJaIconImg = document.createElement('img');
+    horenJaIconImg.src = 'Icoon/horen-ja.svg';
+    horenJaIconImg.alt = 'Beschikbaar voor horen';
+    horenJaIconImg.className = 'w-3 h-3 md:w-3.5 md:h-3.5 mr-1.5 flex-shrink-0';
+    horenJaLegendaSpan.appendChild(horenJaIconImg);
+    horenJaLegendaSpan.appendChild(document.createTextNode("Beschikbaar voor horen"));
+    container.appendChild(horenJaLegendaSpan);
+
+    // Legenda voor Horen Nee (Rood oor)
+    const horenNeeLegendaSpan = document.createElement('span');
+    horenNeeLegendaSpan.className = "flex items-center text-xs sm:text-sm";
+    const horenNeeIconImg = document.createElement('img');
+    horenNeeIconImg.src = 'Icoon/horen-nee.svg';
+    horenNeeIconImg.alt = 'Niet beschikbaar voor horen';
+    horenNeeIconImg.className = 'w-3 h-3 md:w-3.5 md:h-3.5 mr-1.5 flex-shrink-0';
+    horenNeeLegendaSpan.appendChild(horenNeeIconImg);
+    horenNeeLegendaSpan.appendChild(document.createTextNode("Niet beschikbaar voor horen"));
+    container.appendChild(horenNeeLegendaSpan);
+}
+
+/**
+ * Controleert of een gegeven datum vandaag is.
+ * @param {Date} dag De te controleren datum.
+ * @returns {boolean} True als de dag vandaag is, anders false.
+ */
+function isVandaag(dag) {
+    const vandaag = new Date();
+    vandaag.setHours(0, 0, 0, 0);
+    const teVergelijkenDag = new Date(dag);
+    teVergelijkenDag.setHours(0, 0, 0, 0);
+    return vandaag.getTime() === teVergelijkenDag.getTime();
 }
 
 // Gedeelte van Rooster/js/verlofrooster_logic.js
@@ -550,51 +594,55 @@ function tekenRooster() {
         </div>`;
 
     updateDatumHeader();
-    let dagenInPeriode = [];
-    let aantalDagen;
+    let dagenInPeriodeVolledig = []; // Renamed from dagenInPeriode to avoid confusion
+    let aantalDagenTotaal; // Renamed from aantalDagen
     const vandaag = new Date();
     vandaag.setHours(0, 0, 0, 0);
 
     if (huidigeWeergave === 'maand') {
-        aantalDagen = new Date(huidigeDatumFocus.getFullYear(), huidigeDatumFocus.getMonth() + 1, 0).getDate();
-        for (let i = 1; i <= aantalDagen; i++) {
-            dagenInPeriode.push(new Date(huidigeDatumFocus.getFullYear(), huidigeDatumFocus.getMonth(), i));
+        aantalDagenTotaal = new Date(huidigeDatumFocus.getFullYear(), huidigeDatumFocus.getMonth() + 1, 0).getDate();
+        for (let i = 1; i <= aantalDagenTotaal; i++) {
+            dagenInPeriodeVolledig.push(new Date(huidigeDatumFocus.getFullYear(), huidigeDatumFocus.getMonth(), i));
         }
     } else { // week weergave
-        aantalDagen = 7;
+        aantalDagenTotaal = 7;
         let dagVanDeWeek = huidigeDatumFocus.getDay();
         let startVanDeWeek = new Date(huidigeDatumFocus);
-        // Zorg dat de week op maandag start (getDay: 0=Zo, 1=Ma, ..., 6=Za)
         let diff = startVanDeWeek.getDate() - dagVanDeWeek + (dagVanDeWeek === 0 ? -6 : 1);
         startVanDeWeek.setDate(diff);
         for (let i = 0; i < 7; i++) {
             const dag = new Date(startVanDeWeek);
             dag.setDate(startVanDeWeek.getDate() + i);
-            dagenInPeriode.push(dag);
+            dagenInPeriodeVolledig.push(dag);
         }
     }
 
-    // Calculate column width based on weekend visibility
-    const minCellWidth = gebruikersInstellingen.weekendenWeergeven ? 40 : 50; // Wider cells when weekends are hidden
-    domRefsLogic.roosterGridHeader.style.gridTemplateColumns = `minmax(180px, 1.5fr) repeat(${aantalDagen}, minmax(${minCellWidth}px, 1fr))`; // Medewerker kolom breder
+    // Filter to get only days to display based on weekend visibility
+    const dagenTonenInPeriode = gebruikersInstellingen.weekendenWeergeven ? 
+                                dagenInPeriodeVolledig : 
+                                dagenInPeriodeVolledig.filter(dag => dag.getDay() !== 0 && dag.getDay() !== 6);
+
+    const effectiefAantalDagenVoorGrid = dagenTonenInPeriode.length;
+    const minCellWidth = gebruikersInstellingen.weekendenWeergeven ? 40 : 50; 
+    
+    domRefsLogic.roosterGridHeader.style.gridTemplateColumns = `minmax(180px, 1.5fr) repeat(${effectiefAantalDagenVoorGrid}, minmax(${minCellWidth}px, 1fr))`;
 
     const dagNamenKort = ['Zo', 'Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za'];
-    dagenInPeriode.forEach(dag => {        const dagDiv = document.createElement('div');
-        dagDiv.className = "dag-header rooster-header-dag p-1.5 text-center text-xs border-r border-gray-300 last:border-r-0 bg-gray-200 text-gray-700";
+    // Iterate over VISIBLE days to create headers
+    dagenTonenInPeriode.forEach(dag => {        
+        const dagDiv = document.createElement('div');
+        dagDiv.className = "dag-header rooster-header-dag p-1.5 text-center text-xs border-r border-gray-300 dark:border-gray-600 last:border-r-0";
         dagDiv.innerHTML = `${dagNamenKort[dag.getDay()]}<br>${dag.getDate()}`;
         if (dag.toDateString() === vandaag.toDateString()) {
-            dagDiv.classList.add("dag-header-vandaag"); // Styling via CSS
+            dagDiv.classList.add("dag-header-vandaag"); 
         }
         
-        // Apply theme-specific classes
         if (document.body.classList.contains('dark-theme')) {
-            dagDiv.classList.add('bg-gray-700', 'text-gray-200', 'border-gray-600');
+            dagDiv.classList.add('bg-gray-700', 'text-gray-200');
         } else {
-            dagDiv.classList.add('bg-gray-200', 'text-gray-700', 'border-gray-300');
+            dagDiv.classList.add('bg-gray-200', 'text-gray-700');
         }
-        if (!gebruikersInstellingen.weekendenWeergeven && (dag.getDay() === 0 || dag.getDay() === 6)) {
-            dagDiv.classList.add('hidden');
-        }
+        // No longer need to add 'hidden' class for weekends here, as they are filtered out from dagenTonenInPeriode
         domRefsLogic.roosterGridHeader.appendChild(dagDiv);
     });
 
@@ -602,7 +650,7 @@ function tekenRooster() {
     const zoekTerm = domRefsLogic.roosterSearchInput ? domRefsLogic.roosterSearchInput.value.toLowerCase() : '';
 
     const gesorteerdeMedewerkers = [...alleMedewerkers]
-        .filter(mwd => mwd.Actief && !mwd.Verbergen) // Filter direct op Actief en Verbergen
+        .filter(mwd => mwd.Actief && !mwd.Verbergen) 
         .sort((a, b) => {
             const teamA = a.Team || '';
             const teamB = b.Team || '';
@@ -642,23 +690,23 @@ function tekenRooster() {
 
             if (teamObject) {
                 const teamHeaderDiv = document.createElement('div');
-                teamHeaderDiv.className = `team-header-rij col-span-${aantalDagen + 1} p-2 font-semibold text-sm sticky left-0 z-10`;
-                teamHeaderDiv.style.gridColumn = `1 / span ${aantalDagen + 1}`;
+                // Use effectiefAantalDagenVoorGrid for span
+                teamHeaderDiv.className = `team-header-rij p-2 font-semibold text-sm sticky left-0 z-10`; 
+                teamHeaderDiv.style.gridColumn = `1 / span ${effectiefAantalDagenVoorGrid + 1}`;
                 teamHeaderDiv.textContent = huidigTeamNaamRender || "Team Onbekend";
 
                 const teamKleur = teamObject.Kleur || (domRefsLogic.appBody.classList.contains('dark-theme') ? '#374151' : '#e5e7eb');
                 teamHeaderDiv.style.backgroundColor = teamKleur;
                 teamHeaderDiv.style.color = getContrasterendeTekstkleur(teamKleur);
 
-                teamHeaderDiv.style.borderBottom = `1px solid var(--grid-line-color, #d1d5db)`; // Fallback kleur
+                teamHeaderDiv.style.borderBottom = `1px solid var(--grid-line-color, #d1d5db)`; 
                 teamHeaderDiv.style.borderTop = `1px solid var(--grid-line-color, #d1d5db)`;
                 domRefsLogic.roosterDataRows.appendChild(teamHeaderDiv);
             }
-        }        const rijDiv = document.createElement('div');
+        }        
+        const rijDiv = document.createElement('div');
         rijDiv.className = "medewerker-rij grid gap-px";
-        // Use same column width calculation as the header for consistency
-        const minCellWidth = gebruikersInstellingen.weekendenWeergeven ? 40 : 50; // Wider cells when weekends are hidden
-        rijDiv.style.gridTemplateColumns = `minmax(180px, 1.5fr) repeat(${aantalDagen}, minmax(${minCellWidth}px, 1fr))`;
+        rijDiv.style.gridTemplateColumns = `minmax(180px, 1.5fr) repeat(${effectiefAantalDagenVoorGrid}, minmax(${minCellWidth}px, 1fr))`;
         if (medewerker.ID) {
             rijDiv.dataset.medewerkerId = medewerker.ID;
             rijDiv.addEventListener('click', handleRijSelectie);
@@ -669,7 +717,6 @@ function tekenRooster() {
         const naamDiv = document.createElement('div');
         naamDiv.className = 'rooster-cel-medewerker sticky left-0 flex items-center p-2 z-20 border-b border-r';
         
-        // Add theme-specific classes based on current theme
         if (document.body.classList.contains('dark-theme')) {
             naamDiv.classList.add('bg-gray-800', 'text-gray-200', 'border-gray-600');
         } else {
@@ -678,23 +725,33 @@ function tekenRooster() {
 
         if (typeof window.getProfilePhotoUrl === 'function') {
             const img = document.createElement('img');
-            img.src = window.getProfilePhotoUrl(medewerker, 'S');
+            img.src = window.getProfilePhotoUrl(medewerker, 'S'); 
             img.alt = `Foto ${medewerker.Naam || 'medewerker'}`;
-            img.className = 'flex-shrink-0 w-6 h-6 rounded-full mr-2 object-cover';
+            img.className = 'flex-shrink-0 w-8 h-8 rounded-full mr-2 object-cover'; 
             img.onerror = function () { this.src = 'Icoon/default-profile.svg'; this.alt = 'Standaard profielicoon'; };
             naamDiv.appendChild(img);
-        }        const naamTekstDiv = document.createElement('div');
-        naamTekstDiv.className = 'flex flex-col';
+        }        
+        const naamEnIconContainer = document.createElement('div'); 
+        naamEnIconContainer.className = 'flex flex-col items-start'; 
+
+        const naamTekstDiv = document.createElement('div');
+        naamTekstDiv.className = 'flex flex-col'; 
         const naamSpan = document.createElement('span');
-        naamSpan.className = 'truncate font-medium text-sm text-black dark:text-gray-100';
+        naamSpan.className = 'truncate font-medium text-sm text-black medewerker-naam-span';
         naamSpan.textContent = medewerker.Naam || 'Onbekend';
-        naamTekstDiv.appendChild(naamSpan);        if (medewerker.Functie) {
-            const functieSpan = document.createElement('span');
-            functieSpan.className = 'truncate text-xs text-gray-700 dark:text-gray-400';
-            functieSpan.textContent = medewerker.Functie;
-            naamTekstDiv.appendChild(functieSpan);
+        naamTekstDiv.appendChild(naamSpan);
+        
+        naamEnIconContainer.appendChild(naamTekstDiv); 
+
+        if (medewerker.hasOwnProperty('Horen')) {
+            const horenIcon = document.createElement('img');
+            horenIcon.src = medewerker.Horen ? 'Icoon/horen-ja.svg' : 'Icoon/horen-nee.svg';
+            horenIcon.alt = medewerker.Horen ? 'Beschikbaar voor horen' : 'Niet beschikbaar voor horen';
+            horenIcon.className = 'w-4 h-4 mt-1 flex-shrink-0'; 
+            naamEnIconContainer.appendChild(horenIcon); 
         }
-        naamDiv.appendChild(naamTekstDiv);
+        
+        naamDiv.appendChild(naamEnIconContainer); 
 
         naamDiv.title = `${medewerker.Naam || 'Onbekend'}${medewerker.Functie ? ' - ' + medewerker.Functie : ''}`;
 
@@ -704,15 +761,20 @@ function tekenRooster() {
         }
         rijDiv.appendChild(naamDiv);
 
-        dagenInPeriode.forEach(dag => {            const celDiv = document.createElement('div');
-            // Create the cell with base classes only, theme-specific classes will be added based on current theme
-            celDiv.className = "rooster-cel p-1 min-h-[48px] text-xs flex items-center justify-center relative border-b border-r last:border-r-0";
+        // Iterate over VISIBLE days to create cells
+        dagenTonenInPeriode.forEach((dag, index) => {            
+            const isWeekend = (dag.getDay() === 0 || dag.getDay() === 6);
+            const isVandaagCel = isVandaag(dag);
+
+            const celDiv = document.createElement('div');
+            celDiv.className = `rooster-cel p-1 ${isWeekend && gebruikersInstellingen.weekendenWeergeven ? 'bg-gray-50 dark:bg-gray-850' : ''} ${isVandaagCel ? 'vandaag' : ''}`; // MODIFIED: Removed border-b class
+            celDiv.style.gridColumnStart = index + 2; // +1 for 1-based index, +1 for naamCel
+            celDiv.dataset.datum = dag.toISOString().split('T')[0];
             
-            // Add theme-specific classes based on current theme
             if (document.body.classList.contains('dark-theme')) {
-                celDiv.classList.add('bg-gray-800', 'text-gray-200', 'border-gray-600');
+                celDiv.classList.add('bg-gray-800', 'text-gray-200');
             } else {
-                celDiv.classList.add('bg-white', 'text-gray-800', 'border-gray-300');
+                celDiv.classList.add('bg-white', 'text-gray-800'); // MODIFIED: Removed 'border-gray-300'
             }
             const dagNormaal = new Date(dag.getFullYear(), dag.getMonth(), dag.getDate());
             const genormaliseerdeMedewerkerUsername = typeof window.trimLoginNaamPrefixMachtigingen === 'function' ? window.trimLoginNaamPrefixMachtigingen(medewerker.Username) : medewerker.Username;
@@ -724,12 +786,12 @@ function tekenRooster() {
                 return itemMedewerkerID === genormaliseerdeMedewerkerUsername &&
                     new Date(item.StartDatum) <= dagNormaal &&
                     new Date(item.EindDatum) >= dagNormaal;
-            });            if (verlofOpDag.length > 0) {
+            });            
+            if (verlofOpDag.length > 0) {
                 const item = verlofOpDag[0];
                 const verlofRedenInfo = alleVerlofredenen.find(r => r.ID == item.RedenId || r.Title === item.Reden);
                 const achtergrondKleur = verlofRedenInfo ? (verlofRedenInfo.Kleur || '#888888') : '#888888';
 
-                // Set the background color with !important and ensure the cell has position:relative
                 celDiv.style.setProperty('background-color', achtergrondKleur, 'important');
                 celDiv.style.setProperty('position', 'relative', 'important');
                 celDiv.innerHTML = '';
@@ -738,6 +800,11 @@ function tekenRooster() {
                 tag.className = 'rooster-cel-tag px-1.5 py-0.5 rounded text-center';
                 tag.textContent = (verlofRedenInfo?.Naam || verlofRedenInfo?.Title || "Verlof").substring(0, 3).toUpperCase();
                 tag.style.color = getContrasterendeTekstkleur(achtergrondKleur);
+                // Ensure alignment and font size for verlof tags
+                tag.style.display = 'inline-flex';
+                tag.style.alignItems = 'center';
+                tag.style.justifyContent = 'center';
+                tag.style.fontSize = '0.75rem';
                 celDiv.appendChild(tag);
 
                 let titelTekstVerlof = `Verlof: ${medewerker.Naam || medewerker.Title}`;
@@ -754,19 +821,25 @@ function tekenRooster() {
                     return itemMedewerkerID === genormaliseerdeMedewerkerUsername &&
                         new Date(item.StartCompensatieUren) <= dagNormaal &&
                         new Date(item.EindeCompensatieUren) >= dagNormaal;
-                });                if (compensatieOpDag.length > 0) {
+                });
+                if (compensatieOpDag.length > 0) {
                     const item = compensatieOpDag[0];
-                    const compensatieKleur = '#107c10';
+                    const compensatieKleur = '#107c10'; 
                     celDiv.style.setProperty('background-color', compensatieKleur, 'important');
                     celDiv.style.setProperty('position', 'relative', 'important');
-                    celDiv.innerHTML = '';
-                    const tag = document.createElement('span');
-                    tag.className = 'rooster-cel-tag px-1.5 py-0.5 rounded text-center';
-                    tag.innerHTML = '&#x23F0;';
-                    tag.style.color = '#FFFFFF';
-                    celDiv.appendChild(tag);
+                    celDiv.innerHTML = ''; 
+
+                    const iconImg = document.createElement('img');
+                    iconImg.src = 'Icoon/CompensatieUren.svg'; // Using local path
+                    iconImg.alt = 'Compensatie';
+                    iconImg.className = 'rooster-cel-icon'; 
+                    iconImg.style.width = '20px'; 
+                    iconImg.style.height = '20px'; 
+                    
+                    celDiv.appendChild(iconImg);
+
                     let titleText = `Compensatie: ${medewerker.Naam || medewerker.Title}`;
-                    titleText += `\nPeriode: ${new Date(item.StartCompensatieUren).toLocaleString()} - ${new Date(item.EindeCompensatieUren).toLocaleString()}`;
+                    titleText += `\\nPeriode: ${new Date(item.StartCompensatieUren).toLocaleString()} - ${new Date(item.EindeCompensatieUren).toLocaleString()}`;
                     if (item.Omschrijving) titleText += `\nOmschrijving: ${item.Omschrijving}`;
                     celDiv.title = titleText.replace(/\\n/g, '\n');
                     cellIsFilled = true;
@@ -810,7 +883,8 @@ function tekenRooster() {
                     } else {
                         return dagNormaal >= startDate && dagNormaal <= endDate;
                     }
-                });                if (zittingVrijOpDagItems.length > 0) {
+                });                
+                if (zittingVrijOpDagItems.length > 0) {
                     const item = zittingVrijOpDagItems[0];
                     const achtergrondKleur = '#F59E0B';
                     celDiv.style.setProperty('background-color', achtergrondKleur, 'important');
@@ -820,6 +894,11 @@ function tekenRooster() {
                     tag.className = 'rooster-cel-tag px-1.5 py-0.5 rounded text-center';
                     tag.textContent = 'ZTV';
                     tag.style.color = getContrasterendeTekstkleur(achtergrondKleur);
+                    // Ensure alignment and font size for ZTV tags
+                    tag.style.display = 'inline-flex';
+                    tag.style.alignItems = 'center';
+                    tag.style.justifyContent = 'center';
+                    tag.style.fontSize = '0.75rem';
                     celDiv.appendChild(tag);
                     let titelTekstZittingVrij = `Zittingvrij: ${medewerker.Naam || medewerker.Title}`;
                     titelTekstZittingVrij += `\nStart: ${new Date(item.ZittingsVrijeDagTijd).toLocaleString('nl-NL')}`;
@@ -870,6 +949,11 @@ function tekenRooster() {
                                     tag.textContent = indicatorInfo.Title;
                                 }
                                 tag.style.color = getContrasterendeTekstkleur(indicatorInfo.Kleur);
+                                // Ensure alignment and font size for UrenPerWeek indicators
+                                tag.style.display = 'inline-flex';
+                                tag.style.alignItems = 'center';
+                                tag.style.justifyContent = 'center';
+                                tag.style.fontSize = '0.75rem';
                                 celDiv.appendChild(tag);
                                 let hoverTitle = indicatorInfo.Beschrijving || indicatorInfo.Title || daySoort;
                                 const startField = dayPrefix + "Start";
@@ -900,11 +984,12 @@ function tekenRooster() {
                         }
                     }
                     if (dateMatch) return true;
-                    if (!dateMatch && (indicator.Title || "").toLowerCase() === "weekend" && (dagNormaal.getDay() === 0 || dagNormaal.getDay() === 6)) return true;
+                    // Weekend indicator logic is now handled by the rooster-cel-weekend class if weekends are shown
+                    // if (!dateMatch && (indicator.Title || "").toLowerCase() === "weekend" && (dagNormaal.getDay() === 0 || dagNormaal.getDay() === 6)) return true;
                     return false;
                 });
 
-                if (indicatorVoorDag) {
+                if (indicatorVoorDag) { // This will now only apply to non-weekend specific DagenIndicators
                     celDiv.style.backgroundColor = indicatorVoorDag.Kleur || '#E0E0E0';
                     celDiv.innerHTML = '';
                     const tag = document.createElement('span');
@@ -913,6 +998,11 @@ function tekenRooster() {
                     else if (indicatorVoorDag.Title) tag.textContent = indicatorVoorDag.Title.substring(0, 1).toUpperCase();
                     else tag.textContent = 'I';
                     tag.style.color = getContrasterendeTekstkleur(indicatorVoorDag.Kleur);
+                    // Ensure alignment and font size for DagenIndicator tags
+                    tag.style.display = 'inline-flex';
+                    tag.style.alignItems = 'center';
+                    tag.style.justifyContent = 'center';
+                    tag.style.fontSize = '0.75rem';
                     celDiv.appendChild(tag);
                     let hoverTitle = indicatorVoorDag.Title || "Indicator";
                     const isBeschrijvingDate = indicatorVoorDag.Beschrijving && (indicatorVoorDag.Beschrijving.match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/) || indicatorVoorDag.Beschrijving.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/));
@@ -922,11 +1012,11 @@ function tekenRooster() {
                 }
             }
 
-            if (!gebruikersInstellingen.weekendenWeergeven && (dag.getDay() === 0 || dag.getDay() === 6)) {
-                celDiv.classList.add("hidden");
-            } else if (!cellIsFilled && (dag.getDay() === 0 || dag.getDay() === 6)) {
+            // Add rooster-cel-weekend class if weekends are shown and this is a weekend day and cell is not otherwise filled
+            if (gebruikersInstellingen.weekendenWeergeven && !cellIsFilled && (dag.getDay() === 0 || dag.getDay() === 6)) {
                 celDiv.classList.add("rooster-cel-weekend");
             }
+            // No longer need to add 'hidden' class for weekends here
 
             if (dag.toDateString() === vandaag.toDateString()) {
                 celDiv.classList.add("rooster-cel-vandaag");
@@ -937,7 +1027,6 @@ function tekenRooster() {
     });
     console.log("[VerlofroosterLogic] Einde tekenRooster.");
 
-    // Ensure weekend cells are properly styled
     setTimeout(ensureWeekendStyling, 100);
 }
 
@@ -1472,3 +1561,5 @@ function renderRooster() {
         tekenRooster();
     }
 }
+
+console.log("verlofrooster_logic.js Klaar met laden");

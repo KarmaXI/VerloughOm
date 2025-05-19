@@ -1,6 +1,4 @@
-/* Pages/css/meldingMaken_styles.css */
-
-/* Stijlen specifiek voor de meldingMaken.aspx pagina */
+/* Stijlen specifiek voor de meldFouten.aspx pagina */
 
 /* --- Thema Variabelen (consistent met hoofdpagina, maar met eigen scope) --- */
 body.light-theme, :root { /* :root voor fallback als class niet op body staat */
@@ -15,6 +13,9 @@ body.light-theme, :root { /* :root voor fallback als class niet op body staat */
     --form-input-focus-ring-color: rgba(59, 130, 246, 0.3); /* blue-300 met opacity */
     --form-input-disabled-bg-color: #f3f4f6;      /* Tailwind gray-100 */
     --form-input-disabled-text-color: #6b7280;    /* Tailwind gray-500 */
+    --form-button-primary-bg-color: #2563eb;      /* Tailwind blue-600 */
+    --form-button-primary-hover-bg-color: #1d4ed8; /* Tailwind blue-700 */
+    --form-button-primary-text-color: #ffffff;    /* Tailwind white */
     --form-button-secondary-bg-color: #e5e7eb;    /* Tailwind gray-200 */
     --form-button-secondary-hover-bg-color: #d1d5db; /* Tailwind gray-300 */
     --form-button-secondary-text-color: #374151;  /* Tailwind gray-700 */
@@ -32,6 +33,7 @@ body.light-theme, :root { /* :root voor fallback als class niet op body staat */
     --form-scrollbar-track-bg: #e5e7eb;           /* gray-200 */
     --form-scrollbar-thumb-bg: #9ca3af;           /* gray-400 */
     --form-scrollbar-thumb-hover-bg: #6b7280;     /* gray-500 */
+    --placeholder-text-color: #9ca3af;            /* gray-400 */
 }
 
 body.dark-theme {
@@ -46,6 +48,9 @@ body.dark-theme {
     --form-input-focus-ring-color: rgba(96, 165, 250, 0.3); /* blue-400 met opacity */
     --form-input-disabled-bg-color: #4b5563;      /* gray-600 */
     --form-input-disabled-text-color: #9ca3af;    /* gray-400 */
+    --form-button-primary-bg-color: #60a5fa;      /* Tailwind blue-400 */
+    --form-button-primary-hover-bg-color: #93c5fd; /* Tailwind blue-300 */
+    --form-button-primary-text-color: #1f2937;    /* Tailwind gray-800 */
     --form-button-secondary-bg-color: #4b5563;    /* gray-600 */
     --form-button-secondary-hover-bg-color: #6b7280; /* gray-500 */
     --form-button-secondary-text-color: #f3f4f6;  /* gray-100 */
@@ -63,86 +68,193 @@ body.dark-theme {
     --form-scrollbar-track-bg: #2d3748;           /* gray-700 */
     --form-scrollbar-thumb-bg: #4a5568;           /* gray-600 */
     --form-scrollbar-thumb-hover-bg: #718096;     /* gray-500 */
+    --placeholder-text-color: #6b7280;            /* gray-500 */
 }
 
 /* Algemene pagina en container styling */
-#app-container {
-    background-color: var(--form-bg-color); /* Voor de achtergrond van de pagina zelf */
-}
-#app-container > div:first-child { /* De main form card */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 20px;
     background-color: var(--form-bg-color);
     color: var(--form-text-color);
+    line-height: 1.6;
+}
+
+#app-container {
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: var(--form-bg-color);
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     border: 1px solid var(--form-border-color);
 }
-h1, #form-subtitle { color: var(--form-text-color); }
-p, label, fieldset legend { color: var(--form-label-color); }
 
-/* Input velden, selects, textareas */
-.modal-form-input { /* Class toegevoegd in HTML */
+h1 {
+    color: var(--form-text-color);
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+#form-subtitle {
+    color: var(--form-label-color);
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 0.9em;
+}
+
+/* Formulier elementen */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--form-label-color);
+}
+
+.form-input,
+.form-textarea,
+.form-select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--form-input-border-color);
+    border-radius: 4px;
     background-color: var(--form-input-bg-color);
     color: var(--form-input-text-color);
-    border: 1px solid var(--form-input-border-color);
+    box-sizing: border-box; /* Zorgt ervoor dat padding de width niet beinvloedt */
+    font-size: 1em;
 }
-.modal-form-input:focus {
+
+.form-input:focus,
+.form-textarea:focus,
+.form-select:focus {
     outline: 2px solid transparent;
     outline-offset: 2px;
     border-color: var(--form-input-focus-border-color);
     box-shadow: 0 0 0 3px var(--form-input-focus-ring-color);
 }
-.modal-form-input.cursor-not-allowed { /* Readonly velden */
+
+.form-input::placeholder,
+.form-textarea::placeholder {
+    color: var(--placeholder-text-color);
+}
+
+.form-textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+.form-input[readonly] {
     background-color: var(--form-input-disabled-bg-color);
     color: var(--form-input-disabled-text-color);
+    cursor: not-allowed;
 }
-.modal-form-input::placeholder { color: var(--placeholder-text-color); }
-
-/* Specifieke styling voor date/datetime-local input iconen */
-input[type="date"]::-webkit-calendar-picker-indicator,
-input[type="datetime-local"]::-webkit-calendar-picker-indicator {
-    filter: var(--form-calendar-picker-filter, none); /* Default geen filter */
-}
-body.dark-theme input[type="date"]::-webkit-calendar-picker-indicator,
-body.dark-theme input[type="datetime-local"]::-webkit-calendar-picker-indicator {
-    --form-calendar-picker-filter: invert(0.8); /* Maakt icoon lichter in donker thema */
-}
-
-fieldset { border-color: var(--form-border-color); }
 
 /* Knoppen */
-#annuleren-button {
+.form-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 30px;
+}
+
+.form-button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    font-size: 1em;
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out;
+}
+
+.form-button-primary {
+    background-color: var(--form-button-primary-bg-color);
+    color: var(--form-button-primary-text-color);
+}
+
+.form-button-primary:hover {
+    background-color: var(--form-button-primary-hover-bg-color);
+}
+
+.form-button-secondary {
     background-color: var(--form-button-secondary-bg-color);
     color: var(--form-button-secondary-text-color);
-    border: 1px solid var(--form-input-border-color); /* Subtiele border */
+    border: 1px solid var(--form-input-border-color); /* Lichte rand voor contrast */
 }
-#annuleren-button:hover {
+
+.form-button-secondary:hover {
     background-color: var(--form-button-secondary-hover-bg-color);
 }
-#indienen-button { /* Primaire knop, Tailwind classes regelen dit al goed */ }
+
 
 /* Status Bericht */
-#status-bericht.bg-blue-600 { /* Info */
-    background-color: var(--form-status-info-bg) !important;
-    color: var(--form-status-info-text) !important;
-    border: 1px solid var(--form-status-info-border) !important;
+#status-bericht {
+    padding: 10px 15px;
+    margin-bottom: 20px;
+    border-radius: 4px;
+    font-size: 0.9em;
+    text-align: center;
 }
-#status-bericht.bg-green-600 { /* Success */
-    background-color: var(--form-status-success-bg) !important;
-    color: var(--form-status-success-text) !important;
-    border: 1px solid var(--form-status-success-border) !important;
+
+#status-bericht.status-info {
+    background-color: var(--form-status-info-bg);
+    color: var(--form-status-info-text);
+    border: 1px solid var(--form-status-info-border);
 }
-#status-bericht.bg-red-600 { /* Error */
-    background-color: var(--form-status-error-bg) !important;
-    color: var(--form-status-error-text) !important;
-    border: 1px solid var(--form-status-error-border) !important;
+
+#status-bericht.status-success {
+    background-color: var(--form-status-success-bg);
+    color: var(--form-status-success-text);
+    border: 1px solid var(--form-status-success-border);
+}
+
+#status-bericht.status-error {
+    background-color: var(--form-status-error-bg);
+    color: var(--form-status-error-text);
+    border: 1px solid var(--form-status-error-border);
 }
 
 /* Footer */
-footer { color: var(--form-label-color); } /* Gebruik label kleur voor consistentie */
-footer a { color: var(--form-link-color); }
-footer a:hover { color: var(--form-link-hover-color); }
+footer {
+    text-align: center;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid var(--form-border-color);
+    font-size: 0.85em;
+    color: var(--form-label-color);
+}
+
+footer a {
+    color: var(--form-link-color);
+    text-decoration: none;
+}
+
+footer a:hover {
+    color: var(--form-link-hover-color);
+    text-decoration: underline;
+}
 
 /* Scrollbar */
-::-webkit-scrollbar-track { background: var(--form-scrollbar-track-bg); }
-::-webkit-scrollbar-thumb { background: var(--form-scrollbar-thumb-bg); }
-::-webkit-scrollbar-thumb:hover { background: var(--form-scrollbar-thumb-hover-bg); }
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+::-webkit-scrollbar-track {
+    background: var(--form-scrollbar-track-bg);
+    border-radius: 10px;
+}
+::-webkit-scrollbar-thumb {
+    background: var(--form-scrollbar-thumb-bg);
+    border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: var(--form-scrollbar-thumb-hover-bg);
+}
 
-.hidden { display: none !important; }
+.hidden {
+    display: none !important;
+}

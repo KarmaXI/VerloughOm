@@ -19,11 +19,11 @@
   --team-green: rgba(4, 120, 87, 0.95);        /* Improved Emerald-700 */
   --team-red: rgba(185, 28, 28, 0.95);         /* Improved Red-700 */
   
-  /* Cell Status Colors - More professional */
+  /* Cell Status Colors - Reverted to original (higher) opacity */
   --cell-blue: rgba(37, 99, 235, 0.92);       /* Blue-600 status */
   --cell-orange: rgba(217, 119, 6, 0.92);     /* Amber-600 status */
   --cell-green: rgba(5, 150, 105, 0.92);      /* Emerald-600 status */
-  --cell-red: rgba(220, 38, 38, 0.92);        /* Red-600 status */
+  --cell-red: rgba(220, 38, 38, 0.92);        /* Red-600 status (for ZIE) */
   
   /* Improved Neutrals */
   --gray-50: #f9fafb;
@@ -104,10 +104,10 @@
   --success-dark: #059669;
   --warning-light: #f59e0b;
   --warning-dark: #d97706;
-  --danger-light: #ef4444;
-  --danger-dark: #dc2626;
+  --danger-light: rgba(239, 68, 68, 0.92);       /* More vibrant red - reverted opacity */
+  --danger-dark: rgba(220, 38, 38, 0.92);        /* Darker red for hover - reverted opacity */
   
-  /* Cell Status Colors - Enhanced for dark theme */
+  /* Cell Status Colors - Enhanced for dark theme - Reverted to original (higher) opacity */
   --cell-blue: rgba(59, 130, 246, 0.92);
   --cell-orange: rgba(251, 146, 60, 0.92);
   --cell-green: rgba(34, 197, 94, 0.92);
@@ -211,7 +211,7 @@ body {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  text-fill-color: transparent;
+  text-emphasis-color: transparent;
 }
 
 /* Refined accent to app title */
@@ -427,26 +427,78 @@ body {
   text-align: center;
   letter-spacing: 0.02em;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  background-color: rgba(0, 0, 0, 0.3) !important; /* Black background with 30% opacity, added !important */
+  color: white !important; /* Ensuring text is white, added !important */
+  display: inline-flex; /* Ensures background applies correctly and allows for alignment */
+  align-items: center; /* Vertical alignment */
+  justify-content: center; /* Horizontal alignment */
+  font-size: 0.75rem; /* Smaller font size */
+  line-height: normal; /* Or adjust as needed for vertical alignment */
+  /* Remove border if it was part of the previous tag look and not desired now */
+  border: none;
 }
 
-/* VKD styling - blue tag */
-.rooster-cel-tag[data-type="VKD"] {
-  background-color: var(--primary-light);
-  color: white;
-}
+/* Specific tag type styling - ensure these do not override the common tag style */
+/* .rooster-cel-tag[data-type="VKD"] {} */
 
 /* VWM styling - orange tag */
-.rooster-cel-tag[data-type="VWM"] {
-  background-color: var(--warning-light);
-  color: white;
-}
+/* .rooster-cel-tag[data-type="VWM"] {} */
 
 /* ZTV styling - green tag */
-.rooster-cel-tag[data-type="ZTV"] {
-  background-color: var(--success-light);
-  color: white;
-}
+/* .rooster-cel-tag[data-type="ZTV"] {} */
 
 .dark-theme .rooster-cel-tag {
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5); /* Slightly stronger shadow for dark theme */
+  background-color: rgba(0, 0, 0, 0.4) !important; /* Darker tag for dark theme, or keep same as light, added !important */
+  color: var(--gray-100) !important; /* Adjusted for dark theme text, added !important */
+}
+
+/* Reinstating specific cell background colors if they were removed previously and are still needed */
+/* VVO - Original: Lighter Green */
+.rooster-cel-vvo {
+  background-color: rgba(74, 222, 128, 0.92) !important; /* Lighter green, high opacity */
+}
+
+/* Compensatie - Original: Bright Green/Lime (from legend) */
+.rooster-cel-compensatie {
+  background-color: rgba(132, 204, 22, 0.92) !important; /* Lime green, high opacity */
+}
+
+
+.light-theme #melding-button,
+.light-theme #admin-instellingen-button,
+.light-theme #beheer-centrum-button,
+.light-theme #help-button {
+  color: #fff;
+  border-color: var(--primary-light);
+  background-color: rgb(59, 130, 246)
+}
+
+
+.light-theme #melding-button:hover,
+.light-theme #admin-instellingen-button:hover,
+.light-theme #beheer-centrum-button:hover,
+.light-theme #help-button:hover {
+  color: var(--primary-focus);
+  border-color: var(--primary-light);
+  background-color: #1e429f; /* Orange */
+}
+
+/* This makes SVGs white */
+.white-svg {
+  filter: brightness(0) invert(1);
+}
+
+/* This centers the element horizontally */
+.centered {
+  display: block;
+  margin: 0 auto;
+}
+
+/* For both horizontal and vertical centering, 
+   add this to the parent container */
+.center-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }

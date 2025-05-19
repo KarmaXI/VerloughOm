@@ -294,4 +294,4 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// console.log('verlofRooster_tour.js processed');
+console.log('verlofRooster_tour.js processed');

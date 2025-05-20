@@ -2,18 +2,17 @@
 
 /* --- Algemene Thema Variabelen --- */
 :root {
-  /* Enhanced Color Palette - Light Theme */
-  --primary-light: #1a56db;      /* More professional blue */
-  --primary-dark: #1e429f;       /* Darker blue for hover states */
-  --primary-focus: #3b82f6;      /* Focus state color */
-  --success-light: #059669;      /* Richer green */
-  --success-dark: #047857;       /* Darker green for hover */
-  --warning-light: #d97706;      /* Deeper amber */
-  --warning-dark: #b45309;       /* Darker amber for hover */
-  --danger-light: #dc2626;       /* More vibrant red */
-  --danger-dark: #b91c1c;        /* Darker red for hover */
+  /* Kleurenpalet */
+  --primary-licht: #3b82f6;
+  --primary-donker: #2563eb;
+  --primary-focus: #60a5fa;
+  --success-licht: #10b981;
+  --success-donker: #059669;
+  --warning-licht: #f59e0b;
+  --warning-donker: #d97706;
+  --danger-licht: #ef4444;
+  --danger-donker: #dc2626;
   
-  /* Improved Neutrals */
   --gray-50: #f9fafb;
   --gray-100: #f3f4f6;
   --gray-200: #e5e7eb;
@@ -24,332 +23,388 @@
   --gray-700: #374151;
   --gray-800: #1f2937;
   --gray-900: #111827;
-  --true-dark: #0f172a;        /* Deep blue-black */
+  --white: #ffffff;
   
-  /* Main Container Colors */
-  --app-bg-light: var(--gray-50);
-  --app-bg-dark: var(--true-dark);
-  --content-bg-light: var(--gray-50);
-  --content-bg-dark: var(--true-dark);
+  /* Thema-specifieke variabelen */
+  /* Lichte Modus */
+  --app-bg-lm: var(--gray-100);
+  --text-main-lm: var(--gray-800);
+  --text-muted-lm: var(--gray-600);
+  --link-lm: var(--primary-licht);
+  --link-hover-lm: var(--primary-donker);
+  --border-color-lm: var(--gray-200);
+  --tab-wrapper-bg-lm: var(--white);
+  --tab-wrapper-label-lm: var(--gray-700);
+  --tab-wrapper-subtle-text-lm: var(--gray-500);
+  --input-bg-lm: var(--white);
+  --input-border-lm: var(--gray-300);
+  --input-text-lm: var(--gray-900);
+  --input-placeholder-lm: var(--gray-400);
+  --input-focus-border-lm: var(--primary-licht);
+  --input-focus-shadow-lm: rgba(59, 130, 246, 0.25);
+  --input-readonly-bg-lm: var(--gray-100);
+  --input-readonly-text-lm: var(--gray-500);
+  --input-readonly-border-lm: var(--gray-300);
+  --schedule-header-bg-lm: var(--gray-100);
+  --schedule-header-text-lm: var(--gray-600);
+  --schedule-row-border-lm: var(--gray-200);
+  --schedule-row-hover-bg-lm: rgba(59, 130, 246, 0.04);
+  --schedule-text-lm: var(--gray-700);
+  --profile-pic-bg-lm: var(--gray-200);
+  --profile-pic-border-lm: var(--white);
+  --toggle-row-bg-lm: var(--gray-100);
+  --toggle-row-border-lm: var(--gray-200);
+  --toggle-row-label-lm: var(--gray-700);
+  --scrollbar-track-bg-lm: var(--gray-100);
+  --scrollbar-thumb-bg-lm: var(--gray-400);
+  --scrollbar-thumb-hover-bg-lm: var(--gray-500);
+
+
+  /* Donkere Modus */
+  --app-bg-dm: var(--gray-900);
+  --text-main-dm: var(--gray-100);
+  --text-muted-dm: var(--gray-300);
+  --link-dm: var(--primary-focus);
+  --link-hover-dm: var(--primary-licht);
+  --border-color-dm: var(--gray-700);
+  --tab-wrapper-bg-dm: var(--gray-800);
+  --tab-wrapper-label-dm: var(--gray-300);
+  --tab-wrapper-subtle-text-dm: var(--gray-400);
+  --input-bg-dm: var(--gray-700);
+  --input-border-dm: var(--gray-600);
+  --input-text-dm: var(--gray-100);
+  --input-placeholder-dm: var(--gray-500);
+  --input-focus-border-dm: var(--primary-focus);
+  --input-focus-shadow-dm: rgba(96, 165, 250, 0.25);
+  --input-readonly-bg-dm: var(--gray-700); /* Kan iets afwijken van input-bg-dm voor duidelijkheid */
+  --input-readonly-text-dm: var(--gray-400);
+  --input-readonly-border-dm: var(--gray-600);
+  --schedule-header-bg-dm: var(--gray-700);
+  --schedule-header-text-dm: var(--gray-300);
+  --schedule-row-border-dm: var(--gray-700);
+  --schedule-row-hover-bg-dm: rgba(96, 165, 250, 0.08);
+  --schedule-text-dm: var(--gray-300);
+  --profile-pic-bg-dm: var(--gray-600);
+  --profile-pic-border-dm: var(--gray-800);
+  --toggle-row-bg-dm: var(--gray-700);
+  --toggle-row-border-dm: var(--gray-600);
+  --toggle-row-label-dm: var(--gray-300);
+  --scrollbar-track-bg-dm: var(--gray-800);
+  --scrollbar-thumb-bg-dm: var(--gray-600);
+  --scrollbar-thumb-hover-bg-dm: var(--gray-500);
   
-  /* Header Container Colors */
-  --header-bg-light: white;
-  --header-bg-dark: rgba(15, 23, 42, 0.98);
-  
-  /* Roster Grid Colors */
-  --grid-bg-light: var(--gray-200);
-  --grid-bg-dark: #1e293b;
-  --grid-cell-bg-light: rgba(255, 255, 255, 0.98);
-  --grid-cell-bg-dark: rgba(30, 41, 59, 0.98);
-  --weekend-cell-bg-light: rgba(243, 244, 246, 0.8);
-  --weekend-cell-bg-dark: rgba(15, 23, 42, 0.8);
-  
-  /* Typography */
+  /* Algemeen */
   --font-main: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  
-  /* Border Variables */
   --border-radius-sm: 0.25rem;
   --border-radius: 0.375rem;
   --border-radius-md: 0.5rem;
   --border-radius-lg: 0.75rem;
-  
-  /* Enhanced Shadows */
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.07), 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
   --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
-/* Light Theme */
-body.light-theme {
-  background-color: var(--app-bg-light);
-  color: var(--gray-800);
-}
-
-/* Dark Theme */
+/* --- Basis Body Styling --- */
 body {
   font-family: var(--font-main);
-  background-color: var(--app-bg-dark);
-  color: var(--gray-100);
   transition: background-color 0.3s ease, color 0.3s ease;
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* --- Algemene Pagina Stijlen --- */
-#app-container > header h1,
-#app-container > header p {
-  color: var(--main-text-color-inst); /* Text in main header follows body theme */
+body.light-theme {
+  background-color: var(--app-bg-lm);
+  color: var(--text-main-lm);
 }
 
-/* --- Tab Navigatie --- */
-.mb-6.border-b {
-  border-color: var(--separator-color-inst) !important;
-}
-.tab-button {
-  color: var(--tab-inactive-text-color-inst) !important;
-  border-bottom: 2px solid transparent;
-  padding-top: 0.75rem; padding-bottom: 0.75rem; /* py-3 */
-}
-.tab-button:hover {
-  color: var(--tab-hover-text-color-inst) !important;
-  border-bottom-color: var(--tab-hover-text-color-inst) !important;
-}
-.tab-button.active {
-  background-color: var(--tab-active-bg-color-inst) !important;
-  border-color: var(--tab-active-border-color-inst) !important;
-  color: var(--tab-active-text-color-inst) !important;
-  font-weight: 600;
+body.dark-theme {
+  background-color: var(--app-bg-dm);
+  color: var(--text-main-dm);
 }
 
-/* Table Styling */
-table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
+/* --- Scrollbar Styling --- */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+body.light-theme ::-webkit-scrollbar-track { background: var(--scrollbar-track-bg-lm); border-radius: 4px; }
+body.light-theme ::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb-bg-lm); border-radius: 4px; border: 2px solid var(--scrollbar-track-bg-lm); }
+body.light-theme ::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-thumb-hover-bg-lm); }
+
+body.dark-theme ::-webkit-scrollbar-track { background: var(--scrollbar-track-bg-dm); border-radius: 4px; }
+body.dark-theme ::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb-bg-dm); border-radius: 4px; border: 2px solid var(--scrollbar-track-bg-dm); }
+body.dark-theme ::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-thumb-hover-bg-dm); }
+
+/* --- Tab Wrapper Card --- */
+.tab-wrapper-card {
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-xl);
+  overflow: hidden;
+}
+body.light-theme .tab-wrapper-card {
+  background-color: var(--tab-wrapper-bg-lm);
+}
+body.dark-theme .tab-wrapper-card {
+  background-color: var(--tab-wrapper-bg-dm);
 }
 
-th {
-  font-weight: 600;
-  text-align: left;
-  padding: 0.5rem 0.75rem;
-  background-color: var(--gray-100);
-  color: var(--gray-500);
+body.light-theme .tab-wrapper-card h2,
+body.light-theme .tab-wrapper-card h3,
+body.light-theme .tab-wrapper-card label { /* Standaard label kleur binnen de tab wrapper */
+  color: var(--tab-wrapper-label-lm);
+}
+body.light-theme .tab-wrapper-card p,
+body.light-theme .tab-wrapper-card .text-sm {
+    color: var(--tab-wrapper-subtle-text-lm);
 }
 
-body.dark-theme th {
-  background-color: var(--gray-800);
-  color: var(--gray-400);
+body.dark-theme .tab-wrapper-card h2,
+body.dark-theme .tab-wrapper-card h3,
+body.dark-theme .tab-wrapper-card label {
+  color: var(--tab-wrapper-label-dm);
+}
+body.dark-theme .tab-wrapper-card p,
+body.dark-theme .tab-wrapper-card .text-sm {
+    color: var(--tab-wrapper-subtle-text-dm);
 }
 
-td {
-  padding: 0.5rem 0.75rem;
-  vertical-align: middle;
+body.light-theme .tab-wrapper-card .border-b { /* Tab navigatie border */
+    border-color: var(--border-color-lm) !important;
+}
+body.dark-theme .tab-wrapper-card .border-b {
+    border-color: var(--border-color-dm) !important;
 }
 
-tbody tr:hover {
-  background-color: rgba(243, 244, 246, 0.5);
+/* Interne borders in formulieren (binnen tab-wrapper) */
+body.light-theme #persoonlijke-gegevens-form .border-t,
+body.light-theme #rooster-instellingen-form .border-t {
+    border-color: var(--border-color-lm) !important;
+}
+body.dark-theme #persoonlijke-gegevens-form .border-t,
+body.dark-theme #rooster-instellingen-form .border-t {
+    border-color: var(--border-color-dm) !important;
 }
 
-body.dark-theme tbody tr:hover {
-  background-color: rgba(55, 65, 81, 0.5);
-}
-
-/* --- Formulieren en Kaarten (Tab Inhoud) --- */
-/* Deze containers blijven donker, zelfs in light mode */
-#persoonlijke-gegevens-form,
-#rooster-instellingen-form {
-  background-color: #374151 !important; /* Tailwind gray-700 - Hardcoded Dark */
-  border: 1px solid #4b5563 !important; /* Tailwind gray-600 - Hardcoded Dark Border */
-  color: #f3f4f6 !important; /* Light text for dark cards */
-}
-
-/* Labels en tekst binnen de donkere kaarten */
-#persoonlijke-gegevens-form label,
-#persoonlijke-gegevens-form h3,
-#persoonlijke-gegevens-form p,
-#persoonlijke-gegevens-form fieldset legend,
-#rooster-instellingen-form label,
-#rooster-instellingen-form h2, /* Titel binnen de tab-content div */
-.werkrooster-edit-table-header div, /* Header van werkrooster tabel */
-.werkrooster-edit-row .dag-label /* Dag labels in werkrooster tabel */
-{
-  color: #d1d5db !important; /* Tailwind gray-300 - Consistent light text on dark cards */
-}
-#persoonlijke-gegevens-form .text-xs.text-gray-400 { /* Subtiele helptekst */
-  color: #9ca3af !important; /* Tailwind gray-400 */
-}
-#werkdagen-display-container ul li {
-  color: #d1d5db !important; /* gray-300 */
-}
-#werkdagen-display-container ul li.text-gray-500 { /* "Niet ingeroosterd" */
-  color: #9ca3af !important; /* gray-400 */
-}
-#werkdagen-display-container .text-xs.mt-2 { /* "Huidig rooster geldig vanaf" */
-  color: #9ca3af !important; /* gray-400 */
-}
-
-
-/* --- Input velden, selects, textareas (binnen de donkere kaarten) --- */
+/* --- Formulier Velden --- */
 .form-input, .form-select, .form-textarea {
-  background-color: #4b5563 !important; /* Tailwind gray-600 - Dark input bg */
-  color: #f3f4f6 !important;            /* Tailwind gray-100 - Light text in input */
-  border: 1px solid #6b7280 !important; /* Tailwind gray-500 - Medium dark border */
-  border-radius: 0.375rem;
-  padding: 0.5rem 0.75rem;
-  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-}
-.form-input::placeholder, .form-textarea::placeholder {
-  color: #9ca3af !important; /* Tailwind gray-400 */
-  opacity: 1;
-}
-.form-input:focus, .form-select:focus, .form-textarea:focus {
-  outline: 2px solid transparent;
-  outline-offset: 2px;
-  border-color: #60a5fa !important; /* Tailwind blue-400 - Focus border for dark inputs */
-  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.3) !important;
-}
-.form-input[readonly], .form-input:disabled, .form-select:disabled, .form-textarea:disabled,
-input[readonly].form-input {
-  background-color: #4A5568 !important; /* Iets andere donkere tint voor disabled */
-  color: #9ca3af !important;
-  opacity: 0.7;
-  cursor: not-allowed !important;
-  border-color: #6b7280 !important;
-}
-
-
-/* --- Werkrooster Edit Sectie Specifieke Styling --- */
-#wijzig-werkrooster-knop {
-  background-color: var(--button-primary-bg-color-inst) !important;
-  color: var(--button-primary-text-color-inst) !important;
-}
-#wijzig-werkrooster-knop:hover {
-  background-color: var(--button-primary-hover-bg-color-inst) !important;
-}
-#wijzig-werkrooster-knop.annuleer-modus { /* JS voegt deze class toe */
-  background-color: var(--button-secondary-bg-color-inst) !important;
-  color: var(--button-secondary-text-color-inst) !important;
-}
-#wijzig-werkrooster-knop.annuleer-modus:hover {
-  background-color: var(--button-secondary-hover-bg-color-inst) !important;
-}
-
-.werkrooster-edit-table-header {
-  border-color: var(--separator-color-inst) !important; /* Gebruik separator voor consistentie */
-}
-.werkrooster-edit-row:hover {
-  background-color: #4A5568 !important;  /* gray-600, iets lichter dan card voor hover */
-}
-
-#opslaan-werkrooster-knop {
-  background-color: var(--button-success-bg-color-inst) !important;
-  color: var(--button-primary-text-color-inst) !important;
-}
-#opslaan-werkrooster-knop:hover {
-  background-color: var(--button-success-hover-bg-color-inst) !important;
-}
-#annuleer-werkrooster-knop {
-  background-color: var(--button-secondary-bg-color-inst) !important;
-  color: var(--button-secondary-text-color-inst) !important;
-}
-#annuleer-werkrooster-knop:hover {
-  background-color: var(--button-secondary-hover-bg-color-inst) !important;
-}
-
-
-/* --- Rooster Instellingen Tab Knoppen & Checkboxes --- */
-#opslaan-instellingen-button,
-#opslaan-persoonlijke-gegevens-knop { /* Stijl voor de nieuwe save knop */
-  background-color: var(--button-primary-bg-color-inst) !important;
-  color: var(--button-primary-text-color-inst) !important;
-}
-#opslaan-instellingen-button:hover,
-#opslaan-persoonlijke-gegevens-knop:hover {
-  background-color: var(--button-primary-hover-bg-color-inst) !important;
-}
-#rooster-instellingen-form input[type="checkbox"] {
-  background-color: var(--input-bg-color-inst); /* Moet overeenkomen met andere inputs in de donkere kaart */
-  border-color: var(--input-border-color-inst);
-}
-#rooster-instellingen-form input[type="checkbox"]:checked {
-  background-color: var(--button-primary-bg-color-inst); /* Gebruik primaire kleur voor checked state */
-  border-color: var(--button-primary-bg-color-inst);
-}
-
-/* --- Statusberichten --- */
-#instellingen-status-bericht,
-#werkrooster-status-bericht,
-#persoonlijke-gegevens-status-bericht {
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  border-radius: var(--border-radius);
   border-width: 1px;
   border-style: solid;
-  /* Kleuren worden door JS en thema variabelen afgehandeld */
+  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, background-color 0.2s ease-in-out;
+  box-shadow: none;
+  font-size: 0.875rem;
+}
+.form-input::placeholder, .form-textarea::placeholder { opacity: 1; }
+.form-select {
+  appearance: none;
+  background-position: right 0.5rem center;
+  background-repeat: no-repeat;
+  background-size: 1.5em 1.5em;
+  padding-right: 2.5rem;
 }
 
+/* Lichte Modus Formulier Velden */
+body.light-theme .form-input,
+body.light-theme .form-select,
+body.light-theme .form-textarea {
+  background-color: var(--input-bg-lm);
+  border-color: var(--input-border-lm);
+  color: var(--input-text-lm);
+}
+body.light-theme .form-select {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e"); /* gray-500 arrow */
+}
+body.light-theme .form-input::placeholder, 
+body.light-theme .form-textarea::placeholder {
+  color: var(--input-placeholder-lm); 
+}
+body.light-theme .form-input:focus,
+body.light-theme .form-select:focus,
+body.light-theme .form-textarea:focus {
+  border-color: var(--input-focus-border-lm);
+  box-shadow: 0 0 0 3px var(--input-focus-shadow-lm);
+  outline: none;
+}
+body.light-theme .form-input[readonly],
+body.light-theme .form-input:disabled,
+body.light-theme .form-select:disabled,
+body.light-theme .form-textarea:disabled {
+  background-color: var(--input-readonly-bg-lm);
+  color: var(--input-readonly-text-lm);
+  border-color: var(--input-readonly-border-lm);
+}
+
+/* Donkere Modus Formulier Velden */
+body.dark-theme .form-input,
+body.dark-theme .form-select,
+body.dark-theme .form-textarea {
+  background-color: var(--input-bg-dm);
+  border-color: var(--input-border-dm);
+  color: var(--input-text-dm);
+}
+body.dark-theme .form-select {
+   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%239ca3af' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e"); /* gray-400 arrow */
+}
+body.dark-theme .form-input::placeholder,
+body.dark-theme .form-textarea::placeholder {
+  color: var(--input-placeholder-dm);
+}
+body.dark-theme .form-input:focus,
+body.dark-theme .form-select:focus,
+body.dark-theme .form-textarea:focus {
+  border-color: var(--input-focus-border-dm);
+  box-shadow: 0 0 0 3px var(--input-focus-shadow-dm);
+  outline: none;
+}
+body.dark-theme .form-input[readonly],
+body.dark-theme .form-input:disabled,
+body.dark-theme .form-select:disabled,
+body.dark-theme .form-textarea:disabled {
+  background-color: var(--input-readonly-bg-dm);
+  color: var(--input-readonly-text-dm);
+  border-color: var(--input-readonly-border-dm);
+}
+
+/* Werkrooster Edit Tabel */
+body.light-theme .werkrooster-edit-table-header {
+    background-color: var(--gray-50); /* Lichter dan form-input readonly */
+    border-bottom-color: var(--gray-200);
+    color: var(--gray-600);
+}
+body.light-theme #werkrooster-input-rows {
+    background-color: var(--gray-50); /* Consistent met header of white */
+}
+body.light-theme #werkrooster-input-rows .dag-label { color: var(--gray-700); }
+
+body.dark-theme .werkrooster-edit-table-header {
+    background-color: var(--gray-700); 
+    border-bottom-color: var(--gray-600); 
+    color: var(--gray-300); 
+}
+body.dark-theme #werkrooster-input-rows {
+    background-color: var(--gray-900); /* Achtergrond van input rows in dark mode */
+}
+body.dark-theme #werkrooster-input-rows .dag-label { color: var(--gray-300); }
+
+/* Toggle switch rijen in Rooster Instellingen */
+body.light-theme #rooster-instellingen-form .flex.items-center.justify-between {
+    background-color: var(--toggle-row-bg-lm);
+    border: 1px solid var(--toggle-row-border-lm);
+}
+body.light-theme #rooster-instellingen-form .flex.items-center.justify-between label.text-sm {
+    color: var(--toggle-row-label-lm);
+}
+
+body.dark-theme #rooster-instellingen-form .flex.items-center.justify-between {
+    background-color: var(--toggle-row-bg-dm);
+    border: 1px solid var(--toggle-row-border-dm);
+}
+body.dark-theme #rooster-instellingen-form .flex.items-center.justify-between label.text-sm {
+    color: var(--toggle-row-label-dm);
+}
+
+/* --- Profiel Foto --- */
+.profile-picture-container {
+    width: 100px; height: 100px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden; margin-bottom: 1rem; 
+    box-shadow: var(--shadow-md); transition: all 0.3s ease;
+}
+.profile-picture-container img { width: 100%; height: 100%; object-fit: cover; }
+
+body.light-theme .profile-picture-container {
+    background-color: var(--profile-pic-bg-lm);
+    border: 3px solid var(--profile-pic-border-lm);
+}
+body.dark-theme .profile-picture-container {
+    background-color: var(--profile-pic-bg-dm);
+    border: 3px solid var(--profile-pic-border-dm);
+}
+
+/* --- Knoppen (Buttons) --- */
+.btn {
+    padding: 0.6rem 1.2rem; border-radius: var(--border-radius-md);
+    font-weight: 500; transition: all 0.2s ease;
+    display: inline-flex; align-items: center; justify-content: center;
+    box-shadow: var(--shadow-sm); letter-spacing: 0.025em;
+    border: 1px solid transparent; 
+}
+.btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.btn:active { transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.btn:disabled, .btn.disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
+
+.btn-primary { background-color: var(--primary-licht); color: white; border-color: var(--primary-licht); }
+.btn-primary:hover { background-color: var(--primary-donker); border-color: var(--primary-donker); }
+/* Geen specifieke dark-theme override voor primary nodig tenzij gewenst */
+
+.btn-secondary { background-color: var(--gray-200); color: var(--gray-700); border-color: var(--gray-300); }
+.btn-secondary:hover { background-color: var(--gray-300); border-color: var(--gray-400); }
+body.dark-theme .btn-secondary {
+    background-color: var(--gray-700); color: var(--gray-100); border-color: var(--gray-600);
+}
+body.dark-theme .btn-secondary:hover { background-color: var(--gray-600); border-color: var(--gray-500); }
+
+.btn-success { background-color: var(--success-licht); color: white; border-color: var(--success-licht); }
+.btn-success:hover { background-color: var(--success-donker); border-color: var(--success-donker); }
+
+
+/* --- Schedule Table --- */
+.schedule-table {
+    border-collapse: separate; border-spacing: 0; width: 100%;
+    border-radius: var(--border-radius-lg); overflow: hidden; box-shadow: var(--shadow);
+}
+.schedule-table thead th {
+    font-weight: 600; text-transform: uppercase; font-size: 0.75rem;
+    letter-spacing: 0.05em; padding: 0.875rem 1.25rem; text-align: left;
+}
+.schedule-table tbody td { padding: 0.875rem 1.25rem; font-size: 0.875rem; }
+
+body.light-theme .schedule-table thead th {
+    background-color: var(--schedule-header-bg-lm);
+    border-bottom: 1px solid var(--schedule-row-border-lm);
+    color: var(--schedule-header-text-lm);
+}
+body.light-theme .schedule-table tbody tr:not(:last-child) td {
+    border-bottom: 1px solid var(--schedule-row-border-lm);
+}
+body.light-theme .schedule-table tbody tr:hover { background-color: var(--schedule-row-hover-bg-lm); }
+body.light-theme .schedule-table tbody td { color: var(--schedule-text-lm); }
+
+body.dark-theme .schedule-table thead th {
+    background-color: var(--schedule-header-bg-dm);
+    border-bottom-color: var(--schedule-row-border-dm);
+    color: var(--schedule-header-text-dm);
+}
+body.dark-theme .schedule-table tbody tr:not(:last-child) td {
+    border-bottom-color: var(--schedule-row-border-dm);
+}
+body.dark-theme .schedule-table tbody tr:hover { background-color: var(--schedule-row-hover-bg-dm); }
+body.dark-theme .schedule-table tbody td { color: var(--schedule-text-dm); }
+
+/* --- Statusberichten --- */
+.status-message {
+  padding: 0.875rem 1.25rem; border-radius: var(--border-radius-md);
+  margin-top: 1.25rem; animation: slideIn 0.3s ease-out;
+  border-width: 1px; border-style: solid; font-size: 0.875rem; line-height: 1.4;
+}
+.status-success { background-color: #dcfce7; border-color: #4ade80; color: #166534; }
+body.dark-theme .status-success { background-color: rgba(34, 197, 94, 0.2); border-color: #22c55e; color: #bbf7d0; }
+.status-error { background-color: #fee2e2; border-color: #f87171; color: #991b1b; }
+body.dark-theme .status-error { background-color: rgba(239, 68, 68, 0.2); border-color: #ef4444; color: #fecaca; }
+.status-info { background-color: #dbeafe; border-color: #60a5fa; color: #1e40af; }
+body.dark-theme .status-info { background-color: rgba(59, 130, 246, 0.2); border-color: #3b82f6; color: #bfdbfe; }
 
 /* --- Footer --- */
-footer {
-  border-color: var(--separator-color-inst) !important;
-  color: var(--tab-inactive-text-color-inst); /* Subtiele tekstkleur passend bij body */
-}
-body.light-theme footer { /* Specifiek voor light theme body */
-   color: #6b7280; /* gray-500 */
-   border-color: #e5e7eb; /* gray-200 */
-}
-footer a {
-  color: var(--link-color-inst) !important;
-}
-footer a:hover {
-  color: var(--link-hover-color-inst) !important;
-}
+footer { border-top-width: 1px; }
+body.light-theme footer { border-color: var(--border-color-lm); color: var(--text-muted-lm); }
+body.light-theme footer a { color: var(--link-lm); }
+body.light-theme footer a:hover { color: var(--link-hover-lm); }
 
-/* Profile picture container */
-.profile-picture-container {
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  background-color: var(--gray-200);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
+body.dark-theme footer { border-color: var(--border-color-dm); color: var(--text-muted-dm); }
+body.dark-theme footer a { color: var(--link-dm); }
+body.dark-theme footer a:hover { color: var(--link-hover-dm); }
 
-body.dark-theme .profile-picture-container {
-  background-color: var(--gray-700);
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-}
-
-.profile-picture-container img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-/* Status classes */
-.status-success {
-  background-color: #d1fae5;
-  border: 1px solid #34d399;
-  color: #065f46;
-}
-
-body.dark-theme .status-success {
-  background-color: rgba(16, 185, 129, 0.2);
-  border-color: #10b981;
-  color: #d1fae5;
-}
-
-.status-error {
-  background-color: #fee2e2;
-  border: 1px solid #f87171;
-  color: #b91c1c;
-}
-
-body.dark-theme .status-error {
-  background-color: rgba(239, 68, 68, 0.2);
-  border-color: #ef4444;
-  color: #fee2e2;
-}
-
-.status-info {
-  background-color: #dbeafe;
-  border: 1px solid #60a5fa;
-  color: #1e40af;
-}
-
-body.dark-theme .status-info {
-  background-color: rgba(59, 130, 246, 0.2);
-  border-color: #3b82f6;
-  color: #dbeafe;
-}
-
-/* Scrollbar theming */
-body.dark-theme ::-webkit-scrollbar-track { background: var(--scrollbar-track-bg-inst) !important; }
-body.dark-theme ::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb-bg-inst) !important; }
-body.dark-theme ::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-thumb-hover-bg-inst) !important; }
-
-body.light-theme ::-webkit-scrollbar-track { background: #e5e7eb !important; }
-body.light-theme ::-webkit-scrollbar-thumb { background: #9ca3af !important; }
-body.light-theme ::-webkit-scrollbar-thumb:hover { background: #6b7280 !important; }
-
+/* --- Utility --- */
 .hidden { display: none !important; }

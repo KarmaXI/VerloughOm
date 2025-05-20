@@ -229,7 +229,10 @@ async function laadInitiëleData(forceerModalData = false) {
             window.getLijstItemsAlgemeen(lijstNamen.Medewerkers, "$select=ID,Title,Naam,Username,Team,Actief,Verbergen,Functie,E_x002d_mail,Horen").then(items => alleMedewerkers = items || []),
             window.getLijstItemsAlgemeen(lijstNamen.Verlof).then(items => alleVerlofItems = items || []),
             window.getLijstItemsAlgemeen(lijstNamen.CompensatieUren).then(items => alleCompensatieUrenItems = items || []),
-            window.getLijstItemsAlgemeen(lijstNamen.Teams, "$select=ID,Title,Naam,Kleur,Actief").then(items => alleTeams = items || []),
+            window.getLijstItemsAlgemeen(lijstNamen.Teams, "$select=ID,Title,Naam,Kleur,Actief").then(items => {
+                alleTeams = items || [];
+                window.alleTeams = alleTeams; // Ensure it's on the window object
+            }),
             window.getLijstItemsAlgemeen(lijstNamen.DagenIndicator).then(items => alleDagenIndicators = items || []),
             window.getLijstItemsAlgemeen(lijstNamen.UrenPerWeek).then(items => alleUrenPerWeekItems = items || []),
             window.getLijstItemsAlgemeen(lijstNamen.IncidenteelZittingVrij).then(items => alleIncidenteelZittingVrijItems = items || []),
@@ -240,6 +243,7 @@ async function laadInitiëleData(forceerModalData = false) {
             dataPromises.push(
                 window.getLijstItemsAlgemeen(lijstNamen.KeuzelijstFuncties, "$select=ID,Title").then(items => {
                     alleKeuzelijstFuncties = items || [];
+                    window.alleKeuzelijstFuncties = alleKeuzelijstFuncties; // Ensure it's on the window object
                 })
             );
         }
@@ -292,6 +296,38 @@ async function laadInitiëleData(forceerModalData = false) {
     }
     console.log("[VerlofroosterLogic] Einde laadInitiëleData.");
 }
+
+/**
+ * Laadt de benodigde data voor de registratie modal.
+ */
+async function laadBenodigdeDataVoorModal() {
+    console.log("[VerlofroosterLogic] Start laden van benodigde data voor modal (Teams, Functies).");
+    try {
+        const teamsPromise = window.getLijstItemsAlgemeen(lijstNamen.Teams, "$select=ID,Title", "");
+        const functiesPromise = window.getLijstItemsAlgemeen(lijstNamen.KeuzelijstFuncties, "$select=ID,Title", "");
+
+        const [teamsData, functiesData] = await Promise.all([teamsPromise, functiesPromise]);
+
+        window.alleTeams = teamsData || [];
+        window.alleKeuzelijstFuncties = functiesData || [];
+
+        console.log("[VerlofroosterLogic] Teams en Functies geladen voor modal:", window.alleTeams, window.alleKeuzelijstFuncties);
+        
+        // Zet een vlag dat deze specifieke data gereed is, indien nodig voor andere logica
+        // isDataVoorRegistratieModalGereed = true; // Of een meer generieke vlag
+
+        return { teams: window.alleTeams, functies: window.alleKeuzelijstFuncties };
+    } catch (error) {
+        console.error("[VerlofroosterLogic] Fout bij het laden van data voor modal:", error);
+        // Toon eventueel een foutmelding aan de gebruiker
+        // showAlert("Kon benodigde data voor het formulier niet laden. Probeer het later opnieuw.", "error");
+        window.alleTeams = []; // Zorg voor lege arrays bij fout
+        window.alleKeuzelijstFuncties = [];
+        return { teams: [], functies: [] };
+    }
+}
+// Exporteer de functie naar window scope als dat nog niet gebeurt via een bundler
+window.laadBenodigdeDataVoorModal = laadBenodigdeDataVoorModal;
 
 /**
  * Past de UI aan op basis van de geladen gebruikersinstellingen.
@@ -712,48 +748,67 @@ function tekenRooster() {
             rijDiv.addEventListener('click', handleRijSelectie);
         } else {
             console.warn("[VerlofroosterLogic] Medewerker zonder ID gevonden:", medewerker);
-        }
-
-        const naamDiv = document.createElement('div');
-        naamDiv.className = 'rooster-cel-medewerker sticky left-0 flex items-center p-2 z-20 border-b border-r';
+        }        const naamDiv = document.createElement('div');
+        naamDiv.className = 'rooster-cel-medewerker sticky left-0 p-2 z-20 border-b border-r min-w-[180px] max-w-[180px]';
         
         if (document.body.classList.contains('dark-theme')) {
             naamDiv.classList.add('bg-gray-800', 'text-gray-200', 'border-gray-600');
         } else {
             naamDiv.classList.add('bg-white', 'text-gray-800', 'border-gray-300');
-        }
-
-        if (typeof window.getProfilePhotoUrl === 'function') {
+        }        if (typeof window.getProfilePhotoUrl === 'function') {
             const img = document.createElement('img');
             img.src = window.getProfilePhotoUrl(medewerker, 'S'); 
             img.alt = `Foto ${medewerker.Naam || 'medewerker'}`;
             img.className = 'flex-shrink-0 w-8 h-8 rounded-full mr-2 object-cover'; 
-            img.onerror = function () { this.src = 'Icoon/default-profile.svg'; this.alt = 'Standaard profielicoon'; };
-            naamDiv.appendChild(img);
-        }        
-        const naamEnIconContainer = document.createElement('div'); 
-        naamEnIconContainer.className = 'flex flex-col items-start'; 
-
-        const naamTekstDiv = document.createElement('div');
-        naamTekstDiv.className = 'flex flex-col'; 
-        const naamSpan = document.createElement('span');
-        naamSpan.className = 'truncate font-medium text-sm text-black medewerker-naam-span';
-        naamSpan.textContent = medewerker.Naam || 'Onbekend';
-        naamTekstDiv.appendChild(naamSpan);
-        
-        naamEnIconContainer.appendChild(naamTekstDiv); 
-
-        if (medewerker.hasOwnProperty('Horen')) {
-            const horenIcon = document.createElement('img');
-            horenIcon.src = medewerker.Horen ? 'Icoon/horen-ja.svg' : 'Icoon/horen-nee.svg';
-            horenIcon.alt = medewerker.Horen ? 'Beschikbaar voor horen' : 'Niet beschikbaar voor horen';
-            horenIcon.className = 'w-4 h-4 mt-1 flex-shrink-0'; 
-            naamEnIconContainer.appendChild(horenIcon); 
+            img.onerror = function () { this.src = 'Icoon/default-profile.svg'; this.alt = 'Standaard profielicoon'; };            // Create a flex container to hold the profile pic on the left and name+icon on the right
+            const profileAndNameContainer = document.createElement('div');
+            profileAndNameContainer.className = 'flex items-start w-full';
+            
+            profileAndNameContainer.appendChild(img);
+            
+            // Create a row container for name and horen icon with justify-between to push icon to the right
+            const nameRow = document.createElement('div');
+            nameRow.className = 'flex items-center w-full justify-between';
+            
+            // Add the name span
+            const nameSpan = document.createElement('span');
+            nameSpan.className = 'font-medium text-sm text-black';
+            nameSpan.textContent = medewerker.Naam || 'Onbekend';
+            nameRow.appendChild(nameSpan);
+            
+            // Add horen icon if applicable, pushed to the right side
+            if (medewerker.hasOwnProperty('Horen')) {
+                const horenIcon = document.createElement('img');
+                horenIcon.src = medewerker.Horen ? 'Icoon/horen-ja.svg' : 'Icoon/horen-nee.svg';
+                horenIcon.alt = medewerker.Horen ? 'Beschikbaar voor horen' : 'Niet beschikbaar voor horen';
+                horenIcon.className = 'w-4 h-4 flex-shrink-0'; 
+                nameRow.appendChild(horenIcon);
+            }
+            
+            profileAndNameContainer.appendChild(nameRow);
+            naamDiv.appendChild(profileAndNameContainer);
+        } else {            // Fallback if profile photo function not available
+            const textContainer = document.createElement('div');
+            textContainer.className = 'flex items-center w-full justify-between';
+            
+            // Add the name span
+            const nameSpan = document.createElement('span');
+            nameSpan.className = 'font-medium text-sm text-black';
+            nameSpan.textContent = medewerker.Naam || 'Onbekend';
+            textContainer.appendChild(nameSpan);
+            
+            // Add horen icon if applicable, pushed to the right
+            if (medewerker.hasOwnProperty('Horen')) {
+                const horenIcon = document.createElement('img');
+                horenIcon.src = medewerker.Horen ? 'Icoon/horen-ja.svg' : 'Icoon/horen-nee.svg';
+                horenIcon.alt = medewerker.Horen ? 'Beschikbaar voor horen' : 'Niet beschikbaar voor horen';
+                horenIcon.className = 'w-4 h-4 flex-shrink-0'; 
+                textContainer.appendChild(horenIcon);
+            }
+            
+            naamDiv.appendChild(textContainer);
         }
-        
-        naamDiv.appendChild(naamEnIconContainer); 
-
-        naamDiv.title = `${medewerker.Naam || 'Onbekend'}${medewerker.Functie ? ' - ' + medewerker.Functie : ''}`;
+          naamDiv.title = `${medewerker.Naam || 'Onbekend'}${medewerker.Functie ? ' - ' + medewerker.Functie : ''}`;
 
         if (typeof window.showProfileCard === 'function' && typeof window.delayedHideProfileCard === 'function') {
             naamDiv.addEventListener('mouseenter', (event) => window.showProfileCard(medewerker, event.currentTarget));
@@ -1157,6 +1212,54 @@ function toonNotificatie(bericht, type = 'info', autoHideDelay = 5000) {
 function initEventListenersLogic() {
     console.log("[VerlofroosterLogic] Start initEventListenersLogic.");
 
+    // Helper function to update the visual state of view toggle buttons
+    const updateViewButtonActiveState = (activeView) => {
+        const weekBtn = domRefsLogic.weekViewButton;
+        const monthBtn = domRefsLogic.monthViewButton;
+        const activeClasses = ['bg-blue-500', 'text-white'];
+        // Classes that define an active button, also need to be removed from the one becoming inactive.
+        const classesToEnsureRemovedFromInactive = ['bg-blue-500', 'text-white'];
+
+        if (!weekBtn || !monthBtn) {
+            console.warn("[VerlofroosterLogic] View toggle buttons not found for state update.");
+            return;
+        }
+
+        // Apply styles based on which view is active
+        if (activeView === 'week') {
+            weekBtn.classList.add(...activeClasses);
+            // Ensure default Tailwind focus behavior is not overridden by removing focus utility classes if they exist from active state
+            weekBtn.classList.remove('focus:z-10', 'focus:ring-2', 'focus:ring-blue-500');
+
+
+            monthBtn.classList.remove(...classesToEnsureRemovedFromInactive);
+            // Add back default Tailwind focus classes if they were part of the non-active state defined in HTML
+            monthBtn.classList.add('focus:z-10', 'focus:ring-2', 'focus:ring-blue-500');
+
+
+        } else if (activeView === 'maand') {
+            monthBtn.classList.add(...activeClasses);
+            monthBtn.classList.remove('focus:z-10', 'focus:ring-2', 'focus:ring-blue-500');
+
+            weekBtn.classList.remove(...classesToEnsureRemovedFromInactive);
+            weekBtn.classList.add('focus:z-10', 'focus:ring-2', 'focus:ring-blue-500');
+        }
+        // theme-toggle.js will handle the styling of the button that just became inactive
+        // by its selector: .view-toggle-button:not(.bg-blue-500):not(.text-white)
+    };
+
+    // Handler for changing the view
+    const handleViewChange = async (nieuweWeergave) => {
+        if (huidigeWeergave === nieuweWeergave) return; // No action if view is already active
+
+        huidigeWeergave = nieuweWeergave;
+        updateViewButtonActiveState(huidigeWeergave); // Update button visual state
+
+        updateDatumHeader(); // Update things like "Mei 2025"
+        await tekenRooster(); // Redraw the main content
+        console.log(`[VerlofroosterLogic] Weergave gewisseld naar: ${huidigeWeergave}`);
+    };
+
     if (domRefsLogic.fabAddButton && domRefsLogic.fabMenu && domRefsLogic.fabIconPlus && domRefsLogic.fabIconClose) {
         domRefsLogic.fabAddButton.addEventListener('click', () => {
             const isMenuOpen = !domRefsLogic.fabMenu.classList.contains('opacity-0');
@@ -1225,34 +1328,16 @@ function initEventListenersLogic() {
 
     if (domRefsLogic.todayButton) domRefsLogic.todayButton.addEventListener('click', async () => {
         huidigeDatumFocus = new Date();
-        await laadInitiëleData(false);
+        await laadInitiëleData(false); // This will also call tekenRooster and updateDatumHeader
+        updateViewButtonActiveState(huidigeWeergave); // Ensure button state is reapplied if view didn't change but data reloaded
     });
     else { console.warn("[VerlofroosterLogic] todayButton niet gevonden in domRefsLogic."); }
 
-    const wisselWeergave = async (nieuweWeergave) => {
-        if (huidigeWeergave === nieuweWeergave) return;
-        huidigeWeergave = nieuweWeergave;
-        if (domRefsLogic.weekViewButton && domRefsLogic.monthViewButton) {
-            if (nieuweWeergave === 'week') {
-                domRefsLogic.weekViewButton.classList.add('bg-blue-500', 'text-white');
-                domRefsLogic.weekViewButton.classList.remove('text-gray-600', 'dark:text-gray-300', 'hover:bg-gray-200', 'dark:hover:bg-gray-700');
-                domRefsLogic.monthViewButton.classList.remove('bg-blue-500', 'text-white');
-                domRefsLogic.monthViewButton.classList.add('text-gray-600', 'dark:text-gray-300', 'hover:bg-gray-200', 'dark:hover:bg-gray-700');
-            } else {
-                domRefsLogic.monthViewButton.classList.add('bg-blue-500', 'text-white');
-                domRefsLogic.monthViewButton.classList.remove('text-gray-600', 'dark:text-gray-300', 'hover:bg-gray-200', 'dark:hover:bg-gray-700');
-                domRefsLogic.weekViewButton.classList.remove('bg-blue-500', 'text-white');
-                domRefsLogic.weekViewButton.classList.add('text-gray-600', 'dark:text-gray-300', 'hover:bg-gray-200', 'dark:hover:bg-gray-700');
-            }
-        } else { console.warn("[VerlofroosterLogic] View toggle buttons niet gevonden in domRefsLogic."); }
-        updateDatumHeader();
-        tekenRooster();
-    };
-
-    if (domRefsLogic.weekViewButton) domRefsLogic.weekViewButton.addEventListener('click', () => wisselWeergave('week'));
+    // Setup event listeners for view toggle buttons
+    if (domRefsLogic.weekViewButton) domRefsLogic.weekViewButton.addEventListener('click', () => handleViewChange('week'));
     else { console.warn("[VerlofroosterLogic] weekViewButton niet gevonden in domRefsLogic."); }
 
-    if (domRefsLogic.monthViewButton) domRefsLogic.monthViewButton.addEventListener('click', () => wisselWeergave('maand'));
+    if (domRefsLogic.monthViewButton) domRefsLogic.monthViewButton.addEventListener('click', () => handleViewChange('maand'));
     else { console.warn("[VerlofroosterLogic] monthViewButton niet gevonden in domRefsLogic."); }
 
     if (domRefsLogic.teamFilterSelect) domRefsLogic.teamFilterSelect.addEventListener('change', tekenRooster);
@@ -1266,42 +1351,54 @@ function initEventListenersLogic() {
     } else { console.warn("[VerlofroosterLogic] roosterSearchInput niet gevonden in domRefsLogic."); }
 
     if (domRefsLogic.meldingButton) {
-        domRefsLogic.meldingButton.addEventListener('click', () => {
-            if (typeof openModal === 'function') {
-                const meldingMakenUrl = `Pages/meldingMaken.aspx?type=fout`;
-                openModal(
-                    'Fout of Suggestie Melden',
-                    `<p>Heeft u een fout gevonden of een suggestie ter verbetering van het verlofrooster?</p>
-                     <p class="mt-2">U kunt dit doorgeven via het <a href="${meldingMakenUrl}" target="_blank" class="text-blue-600 dark:text-blue-400 hover:underline font-semibold">meldingsformulier</a> (opent in nieuw tabblad).</p>
-                     <p class="mt-4 text-xs text-gray-500 dark:text-gray-400">Voor dringende zaken, neem direct contact op met de beheerder.</p>`,
-                    null, null, true
-                );
-            } else {
-                console.warn("[VerlofroosterLogic] openModal functie niet beschikbaar.");
-                alert("Fout/Suggestie meldingsfunctie is momenteel niet beschikbaar.");
-            }
+        domRefsLogic.meldingButton.addEventListener('click', (event) => {
+            // Prevent default link behavior if it's an <a> tag
+            event.preventDefault(); 
+            
+            // Directly navigate
+            window.location.href = domRefsLogic.meldingButton.href; 
         });
-    } else { console.warn("[VerlofroosterLogic] meldingButton niet gevonden in domRefsLogic."); }
-
-    if (domRefsLogic.startRegistratieButton) {
+    } else { console.warn("[VerlofroosterLogic] meldingButton niet gevonden in domRefsLogic."); }    if (domRefsLogic.startRegistratieButton) {
         domRefsLogic.startRegistratieButton.addEventListener('click', () => {
+            console.log("[VerlofroosterLogic] Start registratie button clicked");
             if (typeof openRegistratieModal === 'function') {
+                // Make sure data is loaded before opening the modal
+                if (typeof window.loadRegistrationData === 'function') {
+                    window.loadRegistrationData();
+                }
                 openRegistratieModal();
             } else {
                 console.warn("[VerlofroosterLogic] openRegistratieModal functie niet beschikbaar.");
                 alert("Registratie is momenteel niet mogelijk.");
             }
-        });    } else { console.warn("[VerlofroosterLogic] startRegistratieButton niet gevonden in domRefsLogic."); }
+        });
+    } else {
+        console.warn("[VerlofroosterLogic] startRegistratieButton niet gevonden in domRefsLogic.");
+    }
     
     // Event listener voor de "Verlof aanvragen" FAB knop
     if (domRefsLogic.fabVerlofAanvragenLink) {
         domRefsLogic.fabVerlofAanvragenLink.addEventListener('click', (e) => {
             e.preventDefault();
             console.log("[VerlofroosterLogic] 'Verlof aanvragen' FAB item geklikt.");
-            
+
+            // Bepaal geselecteerde datum (standaard: vandaag)
+            let geselecteerdeDatum = new Date();
+            // Bepaal medewerkergegevens (standaard: huidige gebruiker)
+            let medewerkerGegevens = null;
+            if (window.huidigeGebruiker && window.huidigeGebruiker.medewerkerData) {
+                medewerkerGegevens = window.huidigeGebruiker.medewerkerData;
+            } else if (window.huidigeGebruiker) {
+                // Fallback: gebruik loginNaam als minimale info
+                medewerkerGegevens = {
+                    Gebruikersnaam: window.huidigeGebruiker.loginNaam || window.huidigeGebruiker.normalizedUsername || null,
+                    Naam: window.huidigeGebruiker.Title || window.huidigeGebruiker.normalizedUsername || null
+                };
+            }
+
             if (typeof window.openVerlofAanvraagModal === 'function') {
-                window.openVerlofAanvraagModal();
-                
+                window.openVerlofAanvraagModal(geselecteerdeDatum, medewerkerGegevens);
+
                 // Close the FAB menu
                 if (domRefsLogic.fabMenu) {
                     domRefsLogic.fabMenu.classList.add('opacity-0', 'scale-95', 'pointer-events-none');
@@ -1383,6 +1480,9 @@ function initEventListenersLogic() {
     } else { console.warn("[VerlofroosterLogic] sortMedewerkerButton niet gevonden in domRefsLogic."); }
 
     document.addEventListener('click', handleDocumentKlikVoorDeselectie);
+
+    // Set initial active button state based on the default `huidigeWeergave`
+    updateViewButtonActiveState(huidigeWeergave);
 
     console.log("[VerlofroosterLogic] Einde initEventListenersLogic.");
 }

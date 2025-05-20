@@ -34,27 +34,66 @@
         #rooster-dropdown-menu {
             transition: opacity 0.2s ease-out, transform 0.2s ease-out;
         }
-
-        .dag-header-vandaag {
-            /* Styling in verlofrooster_styles.css */
-        }
-
-        .rooster-cel-vandaag::after {
-            /* Styling in verlofrooster_styles.css */
-        }
-
+        
         #app-container {
             min-height: 100vh;
         }
     </style>
+    <script src="js/machtigingen.js"></script>
     <!-- Theme will be initialized from user settings (gebruikersInstellingen.soortWeergave) in js/theme-toggle.js -->
     <!-- Theme toggle button has been removed as themes are now controlled by user settings -->
 </head>
 
 <body class="light-theme transition-colors duration-300">
+    <script>
+        (async () => {
+            // Wacht tot machtigingen.js klaar is en window.huidigeGebruiker beschikbaar is
+            // Ensure machtigingenInitializationPromise is available
+            if (typeof window.machtigingenInitializationPromise === 'undefined') {
+                console.error("machtigingenInitializationPromise is not defined. machtigingen.js might not have loaded correctly or in time.");
+                // Optionally, redirect to an error page or show a critical error message to the user.
+                // For now, we'll let it try and potentially fail further down, which will be caught.
+            }
+            
+            try {
+                await window.machtigingenInitializationPromise;
+
+                if (window.huidigeGebruiker && window.huidigeGebruiker.normalizedUsername) {
+                    const normalizedUsername = window.huidigeGebruiker.normalizedUsername;
+                    const lijstNaam = "Medewerkers"; 
+                    const selectQuery = "$select=Username,Actief";
+                    const filterQuery = `$filter=Username eq '${normalizedUsername.replace(/'/g, "''")}'`;
+
+                    if (typeof window.getLijstItemsAlgemeen === 'function') {
+                        const gebruikersData = await window.getLijstItemsAlgemeen(lijstNaam, selectQuery, filterQuery);
+                        
+                        if (gebruikersData && gebruikersData.length > 0 && gebruikersData[0].Actief) {
+                            console.log("Gebruiker gevonden en actief, laadt verlofrooster.");
+                        } else {
+                            console.log("Gebruiker niet gevonden of niet actief, redirect naar profielBeheer.aspx.");
+                            window.location.href = 'pages/profielBeheer.aspx';
+                        }
+                    } else {
+                        console.error("Functie getLijstItemsAlgemeen niet gevonden. Kan gebruiker niet valideren. Redirecting to registration as a fallback.");
+                        window.location.href = 'pages/profielBeheer.aspx'; // Fallback redirect
+                    }
+                } else {
+                    console.error("Huidige gebruiker of normalizedUsername niet beschikbaar. Kan gebruiker niet valideren. Redirecting to registration as a fallback.");
+                    // If user info is critical and not available, redirecting might be a safe default.
+                    window.location.href = 'pages/profielBeheer.aspx'; // Fallback redirect
+                }
+            } catch (error) {
+                console.error("Fout bij het controleren van gebruikersregistratie of tijdens await:", error);
+                // Fallback bij fout: overweeg een foutpagina of redirect naar registratie.
+                // For now, redirecting to registration if any error occurs in this critical block.
+                console.log("Redirecting to profielBeheer.aspx due to an error during registration check.");
+                window.location.href = 'pages/profielBeheer.aspx';
+            }
+        })();
+    </script>
     <div id="app-container" class="flex flex-col h-screen">
         <header id="app-header" class="bg-white shadow-md p-3 md:p-4 space-y-3 print:hidden">
-            <div class="flex justify-between items-center">
+            <div class="flex justify-between items-center"> <!-- First row -->
                 <div class="flex items-center space-x-3 md:space-x-4">
                     <h1 id="app-title" class="text-lg sm:text-xl font-bold text-gray-800">Teamverlofrooster</h1>
                     <a id="melding-button" href="pages/meldingMaken.aspx" title="Nieuwe melding maken (fout, suggestie)"
@@ -67,73 +106,62 @@
                     </a>
                     <div id="notification-placeholder" class="text-xs sm:text-sm text-gray-500 italic"></div>
                 </div>
-                <div class="flex items-center space-x-2 md:space-x-3">
+                <div class="flex items-center space-x-2 md:space-x-3"> 
                     <div id="admin-buttons-header" class="flex space-x-1 md:space-x-2">
-                        <a id="admin-instellingen-button" href="Pages/adminCentrum.aspx"
-                            title="Administrator instellingen"
-                            class="text-gray-600 hover:text-blue-600 hover:bg-gray-100 py-1.5 px-2 md:py-2 md:px-3 rounded-lg flex items-center space-x-1 transition-colors border border-gray-200 hover:border-blue-300 shadow-sm">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round">
+                        <a id="admin-instellingen-button" href="Pages/adminCentrum.aspx" title="Administrator instellingen" class="text-gray-600 hover:text-blue-600 hover:bg-gray-100 py-1.5 px-2 md:py-2 md:px-3 rounded-lg flex items-center space-x-1 transition-colors border border-gray-200 hover:border-blue-300 shadow-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M12 20h9"></path>
                                 <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
                             </svg>
                             <span class="sm:inline ml-1">Admin</span>
                         </a>
-                        <a id="beheer-centrum-button" href="Pages/beheerCentrum.aspx" title="Beheer Centrum"
-                            class="text-gray-600 hover:text-blue-600 hover:bg-gray-100 py-1.5 px-2 md:py-2 md:px-3 rounded-lg flex items-center space-x-1 transition-colors border border-gray-200 hover:border-blue-300 shadow-sm">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round">
+                        <a id="beheer-centrum-button" href="Pages/beheerCentrum.aspx" title="Beheer Centrum" class="text-gray-600 hover:text-blue-600 hover:bg-gray-100 py-1.5 px-2 md:py-2 md:px-3 rounded-lg flex items-center space-x-1 transition-colors border border-gray-200 hover:border-blue-300 shadow-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <circle cx="12" cy="12" r="3"></circle>
-                                <path
-                                    d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
-                                </path>
+                                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
                             </svg>
                             <span class="sm:inline ml-1">Beheer</span>
                         </a>
-                    </div> <button id="help-button" title="Hulp & Interactieve Tour"
-                        class="text-gray-600 hover:text-blue-600 hover:bg-gray-100 py-1.5 px-2 md:py-2 md:px-3 rounded-lg flex items-center space-x-1 transition-colors border border-gray-200 hover:border-blue-300 shadow-sm">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <a id="behandelen-button" href="Pages/behandelCentrum.aspx" title="Behandel Centrum" class="text-gray-600 hover:text-blue-600 hover:bg-gray-100 py-1.5 px-2 md:py-2 md:px-3 rounded-lg flex items-center space-x-1 transition-colors border border-gray-200 hover:border-blue-300 shadow-sm dark:text-gray-300 dark:hover:bg-gray-700 dark:border-gray-600 dark:hover:border-blue-500">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                                <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                                <path d="m9 14 2 2 4-4"></path>
+                            </svg>
+                            <span class="sm:inline ml-1">Behandelen</span>
+                        </a>
+                    </div> 
+                    <button id="help-button" title="Hulp & Interactieve Tour" class="text-gray-600 hover:text-blue-600 hover:bg-gray-100 py-1.5 px-2 md:py-2 md:px-3 rounded-lg flex items-center space-x-1 transition-colors border border-gray-200 hover:border-blue-300 shadow-sm dark:text-gray-300 dark:hover:bg-gray-700 dark:border-gray-600 dark:hover:border-blue-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="12" cy="12" r="10"></circle>
                             <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
                             <line x1="12" y1="17" x2="12.01" y2="17"></line>
                         </svg>
                         <span class="hidden sm:inline ml-1">Help</span>
                     </button>
-                    <div class="relative"> <button id="rooster-dropdown-button"
-                            title="Gebruikersinstellingen en persoonlijke gegevens"
-                            class="bg-gray-200 hover:bg-gray-300 text-gray-700 py-1.5 px-2 md:py-2 md:px-3 rounded-lg flex items-center space-x-1 shadow hover:shadow-md transition-all border border-gray-300">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round" class="mr-1">
+                    <div class="relative"> 
+                        <button id="rooster-dropdown-button" title="Gebruikersinstellingen en persoonlijke gegevens" class="bg-gray-200 hover:bg-gray-300 text-gray-700 py-1.5 px-2 md:py-2 md:px-3 rounded-lg flex items-center space-x-1 shadow hover:shadow-md transition-all border border-gray-300">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1">
                                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                                 <circle cx="12" cy="7" r="4"></circle>
                             </svg>
                             <span id="gebruikersnaam-display" class="text-xs sm:text-sm">Gebruiker</span>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <polyline points="6 9 12 15 18 9"></polyline>
                             </svg>
                         </button>
-                        <div id="rooster-dropdown-menu"
-                            class="hidden absolute right-0 mt-2 w-64 bg-white rounded-md shadow-xl py-1 z-50 transform scale-95 opacity-0 border border-gray-200">
-                            <a href="Pages/gInstellingen.aspx?tab=persoonlijk"
-                                class="dropdown-item block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">Persoonlijke
-                                gegevens & Werkdagen</a>
-                            <a href="Pages/gInstellingen.aspx?tab=instellingen"
-                                class="dropdown-item block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">Instellingen
-                                Rooster</a>
+                        <div id="rooster-dropdown-menu" class="hidden absolute right-0 mt-2 w-64 bg-white rounded-md shadow-xl py-1 z-50 transform scale-95 opacity-0 border border-gray-200">
+                            <a href="Pages/gInstellingen.aspx?tab=persoonlijk" class="dropdown-item block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">Persoonlijke gegevens & Werkdagen</a>
+                            <a href="Pages/gInstellingen.aspx?tab=instellingen" class="dropdown-item block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">Instellingen Rooster</a>
                         </div>
                     </div>
                 </div>
             </div>
+            <!-- Second Row for Period Navigation, View Toggle, Search, and Filter -->
             <div class="flex flex-col sm:flex-row justify-between items-center space-y-2 sm:space-y-0">
                 <div class="flex items-center space-x-1 md:space-x-2">
                     <button id="prev-month-button" title="Vorige periode"
-                        class="nav-button p-2 rounded-md hover:bg-gray-200 text-gray-600 transition-colors border border-gray-200 shadow-sm">
+                        class="nav-button p-2 rounded-md text-gray-600 hover:bg-gray-100 border border-gray-200 shadow-sm transition-colors">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <polyline points="15 18 9 12 15 6"></polyline>
@@ -142,13 +170,15 @@
                     <span id="current-month-year"
                         class="text-md sm:text-lg font-semibold text-gray-800 w-32 text-center">Laden...</span>
                     <button id="next-month-button" title="Volgende periode"
-                        class="nav-button p-2 rounded-md hover:bg-gray-200 text-gray-600 transition-colors border border-gray-200 shadow-sm">
+                        class="nav-button p-2 rounded-md text-gray-600 hover:bg-gray-100 border border-gray-200 shadow-sm transition-colors">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <polyline points="9 18 15 12 9 6"></polyline>
                         </svg>
-                    </button> <button id="today-button" title="Ga naar vandaag"
-                        class="nav-button-alt bg-gray-200 hover:bg-gray-300 text-gray-700 py-1.5 px-2 md:py-2 md:px-3 rounded-lg text-xs sm:text-sm shadow hover:shadow-md transition-all border border-gray-300">
+                    </button> 
+                    <button id="today-button" title="Ga naar vandaag"
+                        class="nav-button-alt bg-gray-200 text-gray-700 hover:bg-gray-300 border border-gray-300 
+                               py-1.5 px-2 md:py-2 md:px-3 rounded-lg text-xs sm:text-sm shadow hover:shadow-md transition-all">
                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                             class="mr-1 inline-block">
@@ -158,31 +188,37 @@
                             <line x1="3" y1="10" x2="21" y2="10"></line>
                         </svg>
                         Vandaag
-                    </button>
-                    <div class="view-toggle-group bg-gray-200 rounded-lg p-0.5 flex shadow border border-gray-300">
-                        <button id="week-view-button"
-                            class="view-toggle-button py-1 px-2 md:py-1.5 md:px-3 rounded-md text-xs sm:text-sm text-gray-700 hover:bg-gray-300 hover:text-gray-900 transition-all font-medium">Week</button>
-                        <button id="month-view-button"
-                            class="view-toggle-button py-1 px-2 md:py-1.5 md:px-3 rounded-md text-xs sm:text-sm text-white bg-blue-500 transition-all font-medium">Maand</button>
+                    </button>                    <div class="view-toggle-group inline-flex rounded-md shadow-sm" role="group">
+                        <button id="week-view-button" type="button" 
+                            class="view-button py-2 px-2.5 md:px-3 text-xs sm:text-sm font-medium bg-white text-gray-600 border border-gray-300 rounded-l-lg hover:bg-gray-100 
+                                   focus:z-10 focus:ring-2 focus:ring-blue-500 focus:bg-blue-500 focus:text-white transition-colors">
+                            Week
+                        </button>
+                        <button id="month-view-button" type="button" 
+                            class="view-button py-2 px-2.5 md:px-3 text-xs sm:text-sm font-medium bg-blue-500 text-white border-r border-t border-b border-gray-300 rounded-r-lg hover:bg-blue-600 
+                                   transition-colors">
+                            Maand
+                        </button>
                     </div>
                 </div>
-                <div class="flex items-center space-x-1 md:space-x-2 w-full sm:w-auto">
-                    <select id="team-filter-select" title="Filter op team"
-                        class="filter-input bg-white border border-gray-300 text-gray-800 text-xs sm:text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2 shadow w-full sm:w-auto max-w-[150px] sm:max-w-xs">
-                        <option selected value="all">Alle teams</option>
-                    </select>
+                <!-- Right part: Search and Filter -->
+                <div class="flex items-center space-x-1 md:space-x-2">
                     <div class="relative w-full sm:w-auto">
-                        <input type="search" id="rooster-search-input" placeholder="Zoek medewerker..."
-                            class="filter-input bg-white border border-gray-300 text-gray-800 text-xs sm:text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2 pl-8 shadow w-full sm:w-48 md:w-64">
+                        <input type="search" id="rooster-search-input" placeholder="Zoek medewerker..." 
+                               class="filter-input bg-white text-gray-800 border border-gray-300 placeholder-gray-500 text-xs sm:text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2 pl-8 shadow w-full sm:w-48 md:w-64">
                         <div class="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round" class="text-gray-400">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" 
+                                 class="text-gray-400">
                                 <circle cx="11" cy="11" r="8"></circle>
                                 <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                             </svg>
                         </div>
                     </div>
+                    <select id="team-filter-select" title="Filter op team" 
+                            class="filter-input bg-white text-gray-800 border border-gray-300 text-xs sm:text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2 shadow w-full sm:w-auto max-w-[150px] sm:max-w-xs">
+                        <option selected value="all">Alle teams</option>
+                        <!-- Options will be populated by JS -->
+                    </select>
                 </div>
             </div>
         </header>
@@ -313,8 +349,8 @@
 </div>
 <script src="js/ui_utilities.js"></script>
 <script src="js/configLijst.js"></script>
-<script src="js/machtigingen.js"></script>
 <script src="js/profielKaarten.js"></script>
+<script src="pages/js/meldingVerlof_logic.js"></script>
 <script src="js/verlofroosterModal_logic.js"></script>
 <script src="js/verlofrooster_logic.js"></script>
 <script src="js/theme-toggle.js"></script>

@@ -111,7 +111,8 @@ const sharepointLijstConfiguraties = {
       { "titel": "Titel", "interneNaam": "Title", "type": "Text" }, // Korte omschrijving/onderwerp fout
       { "titel": "Beschrijving fout", "interneNaam": "Beschrijving_x0020_fout", "type": "Note" }, // Uitgebreide beschrijving
       { "titel": "Status", "interneNaam": "Status", "type": "Choice" }, // Nieuw, In behandeling, Afgesloten
-      { "titel": "WaarFout", "interneNaam": "WaarFout", "type": "Choice" } // Waar in app? Registratie, Verlofaanvraag etc.
+      { "titel": "WaarFout", "interneNaam": "WaarFout", "type": "Choice" }, // Waar in app? Registratie, Verlofaanvraag etc.
+	  { "titel": "Reactie", "interneNaam": "Reactie", "type": "Note" } // Reactie op de feedback
     ]
   },
   "IncidenteelZittingVrij": {
@@ -212,8 +213,8 @@ const sharepointLijstConfiguraties = {
     "baseTemplate": 100,
     "velden": [
       { "titel": "Id", "interneNaam": "ID", "type": "Counter" },
-      { "titel": "Titel", "interneNaam": "Title", "type": "Text" }, // Teamnaam (leidend)
-      { "titel": "Naam", "interneNaam": "Naam", "type": "Text" }, // Vaak zelfde als Titel
+      { "titel": "Titel", "interneNaam": "Title", "type": "Text" },
+      { "titel": "Naam", "interneNaam": "Naam", "type": "Text" },
       { "titel": "Actief", "interneNaam": "Actief", "type": "Boolean" },
       { "titel": "Kleur", "interneNaam": "Kleur", "type": "Text" }, // Hex kleurcode
       { "titel": "Teamleider", "interneNaam": "Teamleider", "type": "Text" }, // Display naam teamleider

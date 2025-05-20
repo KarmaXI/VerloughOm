@@ -26,7 +26,7 @@ body {
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  text-fill-color: transparent;
+  text-emphasis-color: transparent;
   position: relative;
   font-weight: 700;
   letter-spacing: -0.02em;
@@ -743,4 +743,296 @@ body {
 
 .light-theme #rooster-cel-tag {
 	text-align: center-right;
+}
+
+/* Styles from meldingVerlof.aspx */
+/* Basic stijlen, geïnspireerd door TailwindCSS utility classes */
+body.verlof-modal-body { /* Scoped for modal usage */
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f9fafb; /* gray-50 */
+    color: #1f2937; /* gray-800 */
+}
+.verlof-modal-body .form-container { /* Scoped for modal usage */
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* Align to top to see header better */
+    padding: 1rem; /* p-4 */
+    width: 100%;
+}
+.verlof-modal-body .verlof-form { /* Scoped for modal usage */
+    background: #ffffff; /* white */
+    border-radius: 0.5rem; /* rounded-lg */
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* shadow-lg */
+    width: 100%;
+    /* max-width: 600px; /* max-w-2xl - Handled by modal width */
+    padding: 1.5rem; /* p-6 */
+    border: 1px solid #e5e7eb; /* border border-gray-200 */
+}
+.verlof-modal-body .form-header { /* Scoped for modal usage */
+    margin-bottom: 1.5rem; /* mb-6 */
+    padding-bottom: 1rem; /* pb-4 */
+    border-bottom: 1px solid #e5e7eb; /* border-b border-gray-200 */
+}
+.verlof-modal-body .form-title { /* Scoped for modal usage */
+    font-size: 1.25rem; /* text-xl */
+    font-weight: 600; /* font-semibold */
+    color: #111827; /* gray-900 */
+    margin: 0;
+}
+.verlof-modal-body .back-link { /* Scoped for modal usage */
+    color: #3b82f6; /* text-blue-500 */
+    text-decoration: none;
+    font-size: 0.875rem; /* text-sm */
+    display: inline-block;
+    margin-top: 0.25rem; /* mt-1 */
+}
+.verlof-modal-body .back-link:hover { /* Scoped for modal usage */
+    text-decoration: underline;
+    color: #2563eb; /* text-blue-600 */
+}
+.verlof-modal-body .form-group { /* Scoped for modal usage */
+    margin-bottom: 1rem; /* mb-4 */
+}
+.verlof-modal-body .form-row { /* Scoped for modal usage */
+    display: grid;
+    grid-template-columns: repeat(1, minmax(0, 1fr)); /* default to 1 column */
+    gap: 1rem; /* gap-4 */
+}
+@media (min-width: 640px) { /* sm breakpoint */
+    .verlof-modal-body .form-row { /* Scoped for modal usage */
+        grid-template-columns: repeat(2, minmax(0, 1fr)); /* 2 columns on sm and up */
+    }
+}
+.verlof-modal-body .form-label { /* Scoped for modal usage */
+    display: block;
+    font-size: 0.875rem; /* text-sm */
+    font-weight: 500; /* font-medium */
+    margin-bottom: 0.25rem; /* mb-1 */
+    color: #374151; /* text-gray-700 */
+}
+.verlof-modal-body .required:after { /* Scoped for modal usage */
+    content: " *";
+    color: #ef4444; /* text-red-500 */
+}
+.verlof-modal-body .form-input, 
+.verlof-modal-body .form-select, 
+.verlof-modal-body .form-textarea { /* Scoped for modal usage */
+    width: 100%;
+    padding: 0.5rem 0.75rem; /* py-2 px-3 */
+    border: 1px solid #d1d5db; /* border-gray-300 */
+    border-radius: 0.375rem; /* rounded-md */
+    font-size: 0.875rem; /* text-sm */
+    box-sizing: border-box;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* shadow-sm */
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+.verlof-modal-body .form-input:focus, 
+.verlof-modal-body .form-select:focus, 
+.verlof-modal-body .form-textarea:focus { /* Scoped for modal usage */
+    outline: none;
+    border-color: #3b82f6; /* focus:border-blue-500 */
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); /* focus:ring focus:ring-blue-200 focus:ring-opacity-50 */
+}
+.verlof-modal-body .form-input[readonly] { /* Scoped for modal usage */
+    background-color: #f3f4f6; /* bg-gray-100 */
+    color: #6b7280; /* text-gray-500 */
+    cursor: not-allowed;
+}
+.verlof-modal-body .form-textarea { /* Scoped for modal usage */
+    resize: vertical;
+    min-height: 100px;
+}
+.verlof-modal-body .form-actions { /* Scoped for modal usage */
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem; /* gap-2 */
+    margin-top: 1.5rem; /* mt-6 */
+    padding-top: 1.5rem; /* pt-6 */
+    border-top: 1px solid #e5e7eb; /* border-t border-gray-200 */
+}
+.verlof-modal-body .btn { /* Scoped for modal usage */
+    padding: 0.5rem 1rem; /* py-2 px-4 */
+    border-radius: 0.375rem; /* rounded-md */
+    font-size: 0.875rem; /* text-sm */
+    font-weight: 500; /* font-medium */
+    cursor: pointer;
+    border: none;
+    transition: background-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* shadow-sm */
+}
+.verlof-modal-body .btn:hover { /* Scoped for modal usage */
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06); /* shadow-md */
+}
+.verlof-modal-body .btn-primary { /* Scoped for modal usage */
+    background-color: #3b82f6; /* bg-blue-500 */
+    color: white;
+}
+.verlof-modal-body .btn-primary:hover { /* Scoped for modal usage */
+    background-color: #2563eb; /* hover:bg-blue-600 */
+}
+.verlof-modal-body .btn-primary:disabled { /* Scoped for modal usage */
+    background-color: #93c5fd; /* bg-blue-300 */
+    cursor: not-allowed;
+}
+.verlof-modal-body .btn-secondary { /* Scoped for modal usage */
+    background-color: #e5e7eb; /* bg-gray-200 */
+    color: #4b5563; /* text-gray-600 */
+    border: 1px solid #d1d5db; /* border border-gray-300 */
+}
+.verlof-modal-body .btn-secondary:hover { /* Scoped for modal usage */
+    background-color: #d1d5db; /* hover:bg-gray-300 */
+}
+
+/* Dark mode styles for modal form */
+.dark-theme .verlof-modal-body { /* Scoped for modal usage */
+    background-color: #111827; /* dark:bg-gray-900 */
+    color: #f3f4f6; /* dark:text-gray-100 */
+}
+.dark-theme .verlof-modal-body .verlof-form { /* Scoped for modal usage */
+    background-color: #1f2937; /* dark:bg-gray-800 */
+    border-color: #374151; /* dark:border-gray-700 */
+}
+.dark-theme .verlof-modal-body .form-header { /* Scoped for modal usage */
+    border-bottom-color: #374151; /* dark:border-gray-700 */
+}
+.dark-theme .verlof-modal-body .form-title { /* Scoped for modal usage */
+    color: #f9fafb; /* dark:text-gray-50 */
+}
+.dark-theme .verlof-modal-body .back-link { /* Scoped for modal usage */
+    color: #60a5fa; /* dark:text-blue-400 */
+}
+.dark-theme .verlof-modal-body .back-link:hover { /* Scoped for modal usage */
+    color: #3b82f6; /* dark:text-blue-500 */
+}
+.dark-theme .verlof-modal-body .form-label { /* Scoped for modal usage */
+    color: #d1d5db; /* dark:text-gray-300 */
+}
+.dark-theme .verlof-modal-body .form-input,
+.dark-theme .verlof-modal-body .form-select,
+.dark-theme .verlof-modal-body .form-textarea { /* Scoped for modal usage */
+    background-color: #374151; /* dark:bg-gray-700 */
+    border-color: #4b5563; /* dark:border-gray-600 */
+    color: #f3f4f6; /* dark:text-gray-100 */
+}
+.dark-theme .verlof-modal-body .form-input::placeholder,
+.dark-theme .verlof-modal-body .form-textarea::placeholder { /* Scoped for modal usage */
+    color: #9ca3af; /* dark:placeholder-gray-400 */
+}
+.dark-theme .verlof-modal-body .form-input[readonly] { /* Scoped for modal usage */
+    background-color: #4b5563; /* dark:bg-gray-600 */
+    color: #9ca3af; /* dark:text-gray-400 */
+}
+.dark-theme .verlof-modal-body .form-actions { /* Scoped for modal usage */
+    border-top-color: #374151; /* dark:border-gray-700 */
+}
+.dark-theme .verlof-modal-body .btn-primary { /* Scoped for modal usage */
+    background-color: #2563eb; /* dark:bg-blue-600 */
+}
+.dark-theme .verlof-modal-body .btn-primary:hover { /* Scoped for modal usage */
+    background-color: #1d4ed8; /* dark:hover:bg-blue-700 */
+}
+.dark-theme .verlof-modal-body .btn-primary:disabled { /* Scoped for modal usage */
+    background-color: #60a5fa; /* dark:bg-blue-400 */
+}
+.dark-theme .verlof-modal-body .btn-secondary { /* Scoped for modal usage */
+    background-color: #374151; /* dark:bg-gray-700 */
+    color: #d1d5db; /* dark:text-gray-300 */
+    border-color: #4b5563; /* dark:border-gray-600 */
+}
+.dark-theme .verlof-modal-body .btn-secondary:hover { /* Scoped for modal usage */
+    background-color: #4b5563; /* dark:hover:bg-gray-600 */
+}
+
+/* Styles for notification area within the modal form */
+.verlof-modal-body #modal-notification-area {
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    text-align: center;
+}
+
+.verlof-modal-body #modal-notification-area.success {
+    background-color: #d1fae5; /* green-100 */
+    color: #065f46; /* green-800 */
+    border: 1px solid #6ee7b7; /* green-300 */
+}
+
+.verlof-modal-body #modal-notification-area.error {
+    background-color: #fee2e2; /* red-100 */
+    color: #991b1b; /* red-800 */
+    border: 1px solid #fca5a5; /* red-300 */
+}
+
+.dark-theme .verlof-modal-body #modal-notification-area.success {
+    background-color: #064e3b; /* dark:green-800/green-900 */
+    color: #a7f3d0; /* dark:green-200 */
+    border-color: #34d399; /* dark:green-500 */
+}
+
+.dark-theme .verlof-modal-body #modal-notification-area.error {
+    background-color: #7f1d1d; /* dark:red-800/red-900 */
+    color: #fecaca; /* dark:red-200 */
+    border-color: #ef4444; /* dark:red-500 */
+}
+
+/* Ensure modal content takes full height if needed */
+.verlof-modal-body .verlof-form {
+    display: flex;
+    flex-direction: column;
+    height: 100%; /* Allow form to take full height of modal content area */
+}
+
+.verlof-modal-body .form-container {
+    flex-grow: 1; /* Allow container to grow */
+}
+
+/* Specificity for modal form elements when inside dark-theme modal card */
+.dark-theme .modal-card .verlof-modal-body .verlof-form {
+    background-color: #1f2937; /* dark:bg-gray-800 */
+    border-color: #374151; /* dark:border-gray-700 */
+}
+
+.dark-theme .modal-card .verlof-modal-body .form-label {
+    color: #d1d5db; /* dark:text-gray-300 */
+}
+
+.dark-theme .modal-card .verlof-modal-body .form-input,
+.dark-theme .modal-card .verlof-modal-body .form-select,
+.dark-theme .modal-card .verlof-modal-body .form-textarea {
+    background-color: #374151; /* dark:bg-gray-700 */
+    border-color: #4b5563; /* dark:border-gray-600 */
+    color: #f3f4f6; /* dark:text-gray-100 */
+}
+
+.dark-theme .modal-card .verlof-modal-body .form-input::placeholder,
+.dark-theme .modal-card .verlof-modal-body .form-textarea::placeholder {
+    color: #9ca3af; /* dark:placeholder-gray-400 */
+}
+
+.dark-theme .modal-card .verlof-modal-body .form-input[readonly] {
+    background-color: #4b5563; /* dark:bg-gray-600 */
+    color: #9ca3af; /* dark:text-gray-400 */
+}
+
+.dark-theme .modal-card .verlof-modal-body .btn-primary {
+    background-color: #2563eb; /* dark:bg-blue-600 */
+}
+.dark-theme .modal-card .verlof-modal-body .btn-primary:hover {
+    background-color: #1d4ed8; /* dark:hover:bg-blue-700 */
+}
+.dark-theme .modal-card .verlof-modal-body .btn-secondary {
+    background-color: #374151; /* dark:bg-gray-700 */
+    color: #d1d5db; /* dark:text-gray-300 */
+    border-color: #4b5563; /* dark:border-gray-600 */
+}
+.dark-theme .modal-card .verlof-modal-body .btn-secondary:hover {
+    background-color: #4b5563; /* dark:hover:bg-gray-600 */
+}
+
+/* Ensure the body tag within the modal content doesn't override modal background */
+#modal-content > .verlof-modal-body {
+    background-color: transparent !important; /* Override if form sets its own body background */
 }

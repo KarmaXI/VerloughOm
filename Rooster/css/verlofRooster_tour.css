@@ -52,6 +52,7 @@ body.tour-active {
 /* Creëer een spotlight-masker voor specifieke elementen die een geforceerde witte achtergrond nodig hebben */
 #app-title.tour-highlighted-element,
 #current-month-year.tour-highlighted-element,
+#period-navigation-group.tour-highlighted-element, /* Added for the period navigation group */
 .view-toggle-group.tour-highlighted-element,
 #rooster-search-input.tour-highlighted-element,
 #team-filter-select.tour-highlighted-element,

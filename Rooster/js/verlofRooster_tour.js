@@ -10,7 +10,7 @@ const TOUR_OVERLAY_ID = 'interactive-tour-overlay';
 function initializeTourSteps() {
     tourSteps = [
         {
-            element: '#app-title',
+            element: '#app-container',
             title: 'Verlofrooster',
             content: 'Welkom bij het Teamverlofrooster! In deze applicatie kun je je verlof en compensatie-uren doorgeven aan je teamleider/senior.',
             position: 'bottom'

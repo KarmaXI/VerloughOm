@@ -17,6 +17,18 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('[Theme] Temporary light theme applied based on system preference');
     }
 
+    // Set initial active state for month view button
+    const monthButton = document.getElementById('month-view-button');
+    if (monthButton) {
+        console.log('[Theme] Setting initial active state for month button');
+        // Force the month button to have active styling immediately 
+        monthButton.classList.add('bg-blue-500', 'text-white');
+        monthButton.classList.remove('bg-white', 'text-gray-600');
+        
+        // Remove classes that might interfere with the active state
+        monthButton.classList.remove('focus:z-10', 'focus:ring-2', 'focus:ring-blue-500');
+    }
+
     // The actual theme will be set by updateThemeFromUserSettings() after gebruikersInstellingen is loaded
     console.log('[Theme] Theme system initialized, waiting for user settings to load');
 });
@@ -170,9 +182,10 @@ function updateTailwindClassesForTheme(isDarkMode) {
             darkClasses: ['bg-gray-700', 'border-gray-600']
         },
         {
-            selector: '.view-toggle-button:not(.bg-blue-500)',
-            lightClasses: ['text-gray-700', 'hover:bg-gray-300', 'hover:text-gray-900'],
-            darkClasses: ['text-gray-300', 'hover:bg-gray-600', 'hover:text-white']
+            // Adjusted selector to NOT interfere with the active button's specific styling
+            selector: '.view-toggle-button:not(.bg-blue-500):not(.text-white)', 
+            lightClasses: ['text-gray-700', 'hover:bg-gray-300', 'hover:text-gray-900', 'bg-white'], // Ensure bg-white for light non-active
+            darkClasses: ['text-gray-300', 'hover:bg-gray-600', 'hover:text-white', 'bg-gray-700'] // Ensure bg-gray-700 for dark non-active
         },
         {
             selector: '#fab-menu',
@@ -242,15 +255,9 @@ function updateTailwindClassesForTheme(isDarkMode) {
         },
        
         {
-            selector: '.rooster-cel-medewerker .flex.flex-col',
-            lightClasses: ['text-black'],
-            darkClasses: ['text-white']
-        }
-    ];
-        {
-            selector: '.rooster-cel-tag[data-type="ZTV"]',
-            lightClasses: ['shadow-sm'],
-            darkClasses: ['shadow-md']
+            selector: '.medewerker-naam-span', // Corrected: Target the span directly
+            lightClasses: ['text-black'],    // Ensure text-black in light mode
+            darkClasses: ['text-white']     // Ensure text-white in dark mode
         }
     ];
     

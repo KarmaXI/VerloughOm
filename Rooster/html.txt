@@ -1,0 +1,2037 @@
+<!DOCTYPE html>
+<html lang="nl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verlofrooster</title>
+    <link rel="icon" type="image/svg+xml" href="Icoon/favicon.svg">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/verlofrooster_styles.css">
+    <link rel="stylesheet" href="css/profielKaart.css">
+    <link rel="stylesheet" href="css/verlofRooster_tour.css">
+    <link rel="stylesheet" href="css/enhanced_styles.css">
+    <!-- <link rel="stylesheet" href="css/weekend_fixes.css"> MOVED TO verlofrooster_styles.css -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        #fab-menu {
+            transition: opacity 0.2s ease-out, transform 0.2s ease-out;
+        }
+
+        .fab-menu-item {
+            transition: background-color 0.15s ease-in-out;
+        }
+
+        #rooster-dropdown-menu {
+            transition: opacity 0.2s ease-out, transform 0.2s ease-out;
+        }
+        
+        #app-container {
+            min-height: 100vh;
+        }
+    </style>
+    <script src="js/machtigingen.js"></script>
+    <!-- Theme will be initialized from user settings (gebruikersInstellingen.soortWeergave) in js/theme-toggle.js -->
+    <!-- Theme toggle button has been removed as themes are now controlled by user settings -->
+</head>
+
+<body class="light-theme transition-colors duration-300">
+    <script>
+        (async () => {
+            // Wacht tot machtigingen.js klaar is en window.huidigeGebruiker beschikbaar is
+            // Ensure machtigingenInitializationPromise is available
+            if (typeof window.machtigingenInitializationPromise === 'undefined') {
+                console.error("machtigingenInitializationPromise is not defined. machtigingen.js might not have loaded correctly or in time.");
+                // Optionally, redirect to an error page or show a critical error message to the user.
+                // For now, we'll let it try and potentially fail further down, which will be caught.
+            }
+            
+            try {
+                await window.machtigingenInitializationPromise;
+
+                if (window.huidigeGebruiker && window.huidigeGebruiker.normalizedUsername) {
+                    const normalizedUsername = window.huidigeGebruiker.normalizedUsername;
+                    const lijstNaam = "Medewerkers"; 
+                    const selectQuery = "$select=Username,Actief";
+                    const filterQuery = `$filter=Username eq '${normalizedUsername.replace(/'/g, "''")}'`;
+
+                    if (typeof window.getLijstItemsAlgemeen === 'function') {
+                        const gebruikersData = await window.getLijstItemsAlgemeen(lijstNaam, selectQuery, filterQuery);
+                        
+                        if (gebruikersData && gebruikersData.length > 0 && gebruikersData[0].Actief) {
+                            console.log("Gebruiker gevonden en actief, laadt verlofrooster.");
+                        } else {
+                            console.log("Gebruiker niet gevonden of niet actief, redirect naar profielBeheer.aspx.");
+                            window.location.href = 'pages/profielBeheer.aspx';
+                        }
+                    } else {
+                        console.error("Functie getLijstItemsAlgemeen niet gevonden. Kan gebruiker niet valideren. Redirecting to registration as a fallback.");
+                        window.location.href = 'pages/profielBeheer.aspx'; // Fallback redirect
+                    }
+                } else {
+                    console.error("Huidige gebruiker of normalizedUsername niet beschikbaar. Kan gebruiker niet valideren. Redirecting to registration as a fallback.");
+                    // If user info is critical and not available, redirecting might be a safe default.
+                    window.location.href = 'pages/profielBeheer.aspx'; // Fallback redirect
+                }
+            } catch (error) {
+                console.error("Fout bij het controleren van gebruikersregistratie of tijdens await:", error);
+                // Fallback bij fout: overweeg een foutpagina of redirect naar registratie.
+                // For now, redirecting to registration if any error occurs in this critical block.
+                console.log("Redirecting to profielBeheer.aspx due to an error during registration check.");
+                window.location.href = 'pages/profielBeheer.aspx';
+            }
+        })();
+    </script>
+    <div id="app-container" class="flex flex-col h-screen">
+        <header id="app-header" class="bg-white shadow-md p-3 md:p-4 space-y-3 print:hidden">
+            <div class="flex justify-between items-center"> <!-- First row -->
+                <div class="flex items-center space-x-3 md:space-x-4">
+                    <h1 id="app-title" class="text-lg sm:text-xl font-bold text-gray-800">Teamverlofrooster</h1>
+                    <a id="melding-button" href="pages/meldingMaken.aspx" title="Nieuwe melding maken (fout, suggestie)"
+                        class="text-gray-600 hover:text-blue-600 hover:bg-gray-100 py-1.5 px-2 md:py-2 md:px-3 rounded-lg flex items-center space-x-1 transition-colors border border-gray-200 hover:border-blue-300 shadow-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                        <span class="sm:inline ml-1">Melding</span>
+                    </a>
+                    <div id="notification-placeholder" class="text-xs sm:text-sm text-gray-500 italic"></div>
+                </div>
+                <div class="flex items-center space-x-2 md:space-x-3"> 
+                    <div id="admin-buttons-header" class="flex space-x-1 md:space-x-2">
+                        <a id="admin-instellingen-button" href="Pages/adminCentrum.aspx" title="Administrator instellingen" class="text-gray-600 hover:text-blue-600 hover:bg-gray-100 py-1.5 px-2 md:py-2 md:px-3 rounded-lg flex items-center space-x-1 transition-colors border border-gray-200 hover:border-blue-300 shadow-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 20h9"></path>
+                                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                            </svg>
+                            <span class="sm:inline ml-1">Admin</span>
+                        </a>
+                        <a id="beheer-centrum-button" href="Pages/beheerCentrum.aspx" title="Beheer Centrum" class="text-gray-600 hover:text-blue-600 hover:bg-gray-100 py-1.5 px-2 md:py-2 md:px-3 rounded-lg flex items-center space-x-1 transition-colors border border-gray-200 hover:border-blue-300 shadow-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="3"></circle>
+                                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                            </svg>
+                            <span class="sm:inline ml-1">Beheer</span>
+                        </a>
+                        <a id="behandelen-button" href="Pages/behandelCentrum.aspx" title="Behandel Centrum" class="text-gray-600 hover:text-blue-600 hover:bg-gray-100 py-1.5 px-2 md:py-2 md:px-3 rounded-lg flex items-center space-x-1 transition-colors border border-gray-200 hover:border-blue-300 shadow-sm dark:text-gray-300 dark:hover:bg-gray-700 dark:border-gray-600 dark:hover:border-blue-500">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                                <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                                <path d="m9 14 2 2 4-4"></path>
+                            </svg>
+                            <span class="sm:inline ml-1">Behandelen</span>
+                        </a>
+                    </div> 
+                    <button id="help-button" title="Hulp & Interactieve Tour" class="text-gray-600 hover:text-blue-600 hover:bg-gray-100 py-1.5 px-2 md:py-2 md:px-3 rounded-lg flex items-center space-x-1 transition-colors border border-gray-200 hover:border-blue-300 shadow-sm dark:text-gray-300 dark:hover:bg-gray-700 dark:border-gray-600 dark:hover:border-blue-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                        </svg>
+                        <span class="hidden sm:inline ml-1">Help</span>
+                    </button>
+                    <div class="relative"> 
+                        <button id="rooster-dropdown-button" title="Gebruikersinstellingen en persoonlijke gegevens" class="bg-gray-200 hover:bg-gray-300 text-gray-700 py-1.5 px-2 md:py-2 md:px-3 rounded-lg flex items-center space-x-1 shadow hover:shadow-md transition-all border border-gray-300">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+                            <span id="gebruikersnaam-display" class="text-xs sm:text-sm">Gebruiker</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </button>
+                        <div id="rooster-dropdown-menu" class="hidden absolute right-0 mt-2 w-64 bg-white rounded-md shadow-xl py-1 z-50 transform scale-95 opacity-0 border border-gray-200">
+                            <a href="Pages/gInstellingen.aspx?tab=persoonlijk" class="dropdown-item block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">Persoonlijke gegevens & Werkdagen</a>
+                            <a href="Pages/gInstellingen.aspx?tab=instellingen" class="dropdown-item block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">Instellingen Rooster</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Second Row for Period Navigation, View Toggle, Search, and Filter -->
+            <div class="flex flex-col sm:flex-row justify-between items-center space-y-2 sm:space-y-0">
+                <div class="flex items-center space-x-1 md:space-x-2">
+                    <button id="prev-month-button" title="Vorige periode"
+                        class="nav-button p-2 rounded-md text-gray-600 hover:bg-gray-100 border border-gray-200 shadow-sm transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
+                    </button>
+                    <span id="current-month-year"
+                        class="text-md sm:text-lg font-semibold text-gray-800 w-32 text-center">Laden...</span>
+                    <button id="next-month-button" title="Volgende periode"
+                        class="nav-button p-2 rounded-md text-gray-600 hover:bg-gray-100 border border-gray-200 shadow-sm transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </button> 
+                    <button id="today-button" title="Ga naar vandaag"
+                        class="nav-button-alt bg-gray-200 text-gray-700 hover:bg-gray-300 border border-gray-300 
+                               py-1.5 px-2 md:py-2 md:px-3 rounded-lg text-xs sm:text-sm shadow hover:shadow-md transition-all">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            class="mr-1 inline-block">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="16" y1="2" x2="16" y2="6"></line>
+                            <line x1="8" y1="2" x2="8" y2="6"></line>
+                            <line x1="3" y1="10" x2="21" y2="10"></line>
+                        </svg>
+                        Vandaag
+                    </button>                    <div class="view-toggle-group inline-flex rounded-md shadow-sm" role="group">
+                        <button id="week-view-button" type="button" 
+                            class="view-button py-2 px-2.5 md:px-3 text-xs sm:text-sm font-medium bg-white text-gray-600 border border-gray-300 rounded-l-lg hover:bg-gray-100 
+                                   focus:z-10 focus:ring-2 focus:ring-blue-500 focus:bg-blue-500 focus:text-white transition-colors">
+                            Week
+                        </button>
+                        <button id="month-view-button" type="button" 
+                            class="view-button py-2 px-2.5 md:px-3 text-xs sm:text-sm font-medium bg-blue-500 text-white border-r border-t border-b border-gray-300 rounded-r-lg hover:bg-blue-600 
+                                   transition-colors">
+                            Maand
+                        </button>
+                    </div>
+                </div>
+                <!-- Right part: Search and Filter -->
+                <div class="flex items-center space-x-1 md:space-x-2">
+                    <div class="relative w-full sm:w-auto">
+                        <input type="search" id="rooster-search-input" placeholder="Zoek medewerker..." 
+                               class="filter-input bg-white text-gray-800 border border-gray-300 placeholder-gray-500 text-xs sm:text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2 pl-8 shadow w-full sm:w-48 md:w-64">
+                        <div class="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" 
+                                 class="text-gray-400">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            </svg>
+                        </div>
+                    </div>
+                    <select id="team-filter-select" title="Filter op team" 
+                            class="filter-input bg-white text-gray-800 border border-gray-300 text-xs sm:text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2 shadow w-full sm:w-auto max-w-[150px] sm:max-w-xs">
+                        <option selected value="all">Alle teams</option>
+                        <!-- Options will be populated by JS -->
+                    </select>
+                </div>
+            </div>
+        </header>
+
+        <main id="app-main" class="flex-grow p-3 md:p-4 overflow-auto">
+            <section id="legenda-section"
+                class="bg-white p-2 md:p-3 rounded-lg mb-3 md:mb-4 shadow print:hidden border border-gray-200">
+                <div id="legenda-items-container"
+                    class="flex flex-wrap items-center gap-x-3 gap-y-1 md:gap-x-4 md:gap-y-2">
+                    <h3 id="legenda-title" class="text-sm sm:text-md font-semibold text-gray-800 mr-2">Legenda:</h3>
+                    <span class="flex items-center text-xs sm:text-sm"><span
+                            class="w-2.5 h-2.5 md:w-3 md:h-3 bg-green-500 rounded-sm mr-1"></span>Voorbeeld
+                        Vakantie</span>
+                </div>
+            </section>
+
+            <div id="registratie-melding"
+                class="hidden bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-3 md:p-4 mb-3 md:mb-4 rounded-md shadow"
+                role="alert">
+                <div class="flex">
+                    <div class="py-1"><svg class="fill-current h-6 w-6 text-yellow-600 mr-4"
+                            xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                            <path
+                                d="M2.93 17.07A10 10 0 1 1 17.07 2.93 10 10 0 0 1 2.93 17.07zM9 5v6h2V5H9zm0 8v2h2v-2H9z" />
+                        </svg></div>
+                    <div>
+                        <p class="font-bold">Registratie Vereist</p>
+                        <p id="registratie-melding-tekst" class="text-sm">Uw gebruikersnaam is niet herkend in de
+                            medewerkerslijst. Registreer alstublieft om toegang te krijgen.</p>
+                        <button id="start-registratie-button"
+                            class="mt-2 bg-yellow-500 hover:bg-yellow-600 text-white py-1 px-3 rounded-md text-sm shadow hover:shadow-md transition-all">Start
+                            Registratie</button>
+                    </div>
+                </div>
+            </div>
+
+            <section id="rooster-grid-container"
+                class="bg-gray-200 p-px rounded-lg shadow-xl overflow-x-auto border border-gray-300">
+                <div id="rooster-grid-header"
+                    class="grid grid-cols-[200px_repeat(31,minmax(40px,1fr))] gap-px bg-gray-300 sticky top-0 z-20 rounded-t-md">
+                    <div
+                        class="rooster-header-medewerker sticky left-0 bg-gray-100 p-2 font-semibold z-30 rounded-tl-md flex items-center text-gray-700">
+                        <span>Medewerker</span>
+                        <button id="sort-medewerker-button" title="Sorteer medewerkers"
+                            class="ml-auto p-1 hover:bg-gray-300 rounded">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M3 4h13M3 8h9M3 12h9M3 16h5M21 12l-4 4-4-4M17 4v16" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div id="rooster-data-rows" class="divide-y divide-gray-300">
+                </div>
+                <div class="rooster-bottom-line bg-gray-300 p-px rounded-b-md h-1"></div>
+            </section>
+            <p id="footer-text" class="mt-4 text-xs text-gray-500 text-center print:hidden">Gegevens worden geladen
+                vanuit SharePoint. Wijzigingen kunnen even duren om zichtbaar te worden.</p>
+        </main>
+
+        <div class="fixed bottom-4 right-4 md:bottom-6 md:right-6 print:hidden z-40">
+            <div id="fab-menu"
+                class="absolute bottom-16 right-0 mb-2 w-60 bg-white rounded-lg shadow-xl py-2 transform scale-95 opacity-0 pointer-events-none border border-gray-200">
+                <a href="javascript:void(0)" id="fab-verlof-aanvragen"
+                    class="fab-menu-item block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 rounded-md">Verlof
+                    aanvragen</a>
+                <a href="javascript:void(0)" id="fab-compensatie-doorgeven"
+                    class="fab-menu-item block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 rounded-md">Compensatieuren
+                    doorgeven</a>
+                <a href="Pages/meldingMaken.aspx?type=ziek" id="fab-ziek-melden"
+                    class="fab-menu-item restricted-fab-item block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 rounded-md">Ziek/Beter
+                    melden</a>
+                <button type="button" id="fab-zittingvrij-modal-trigger"
+                    class="fab-menu-item restricted-fab-item block w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 rounded-md">Zittingvrij
+                    (incidenteel)</button>
+            </div>
+            <button id="fab-add-button" title="Nieuwe melding toevoegen"
+                class="bg-blue-600 hover:bg-blue-700 text-white w-12 h-12 md:w-14 md:h-14 rounded-full shadow-lg flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-all">
+                <svg id="fab-icon-plus" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                <svg id="fab-icon-close" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="hidden">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+        <div id="modal-placeholder"
+            class="hidden fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 p-4 print:hidden">
+            <div class="modal-dialog w-full max-w-md mx-auto">
+                <div
+                    class="modal-card bg-white p-5 md:p-6 rounded-lg shadow-xl w-full transform transition-all scale-95 opacity-0 border border-gray-200">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 id="modal-title" class="text-lg font-semibold text-gray-800">Modal Titel</h3>
+                        <button id="modal-close-button-x"
+                            class="modal-close-x-button text-gray-500 hover:text-gray-700 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                        </button>
+                    </div>
+                    <div id="modal-step-navigation-container" class="hidden mb-4">
+                    </div>
+                    <div id="modal-content" class="text-sm text-gray-700">
+                    </div>
+                    <div id="modal-actions" class="mt-6 flex justify-end space-x-3">
+                        <button id="modal-close-button"
+                            class="modal-button-secondary bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 px-4 rounded-lg text-sm shadow hover:shadow-md transition-all">Sluiten</button>
+                        <button id="modal-action-button"
+                            class="modal-button-primary bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg text-sm shadow hover:shadow-md transition-all">Actie</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="profile-card-container" class="profile-card hidden"></div>
+    </div>
+</body>
+
+</div>
+<script src="js/ui_utilities.js"></script>
+<script src="js/configLijst.js"></script>
+<script src="js/profielKaarten.js"></script>
+<script src="pages/js/meldingVerlof_logic.js"></script>
+<script src="js/verlofroosterModal_logic.js"></script>
+<script src="js/verlofrooster_logic.js"></script>
+<script src="js/theme-toggle.js"></script>
+
+<script src="js/verlofRooster_tour.js"></script>
+</body>
+
+</html>
+
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administrator Centrum - Verlofrooster</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/adminCentrum_styles.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom scrollbar (consistent met hoofdpagina) */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #2d3748; border-radius: 4px; } /* gray-700 */
+        ::-webkit-scrollbar-thumb { background: #4a5568; border-radius: 4px; } /* gray-600 */
+        ::-webkit-scrollbar-thumb:hover { background: #718096; } /* gray-500 */
+
+        /* Stijlen voor actieve tab (indien tabs gebruikt worden) */
+        .tab-button.active {
+            border-color: #3b82f6; /* blue-500 */
+            color: #3b82f6;
+            background-color: #374151; /* gray-700 (donker thema) */
+        }
+        body.light-theme .tab-button.active { /* Wordt overschreven in adminCentrum_styles.css */ }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+    </style>
+</head>
+<body class="bg-gray-800 text-gray-100"> <div id="app-container" class="container mx-auto p-4 md:p-8">
+        <header class="mb-6 md:mb-8">
+            <h1 class="text-2xl md:text-3xl font-bold text-white">Administrator Centrum</h1>
+            <p class="text-gray-400 mt-1">Geavanceerd beheer en configuratie van de Verlofrooster applicatie.</p>
+            <div id="admin-status-bericht-algemeen" class="hidden mt-4 p-3 text-sm rounded-lg"></div>
+        </header>
+
+        <main id="admin-content-container" class="space-y-8">
+            
+            <section id="sectie-app-config" class="bg-gray-700 p-4 md:p-6 rounded-lg shadow-md">
+                <h2 class="text-xl font-semibold text-white mb-4">Applicatie Configuratie</h2>
+                <p class="text-gray-400 mb-2">Hier kunnen instellingen beheerd worden die de werking van de gehele applicatie beïnvloeden.</p>
+                <p class="text-gray-500 text-sm italic">(Deze sectie is een placeholder. Specifieke configuratie-opties moeten nog gedefinieerd worden.)</p>
+                </section>
+
+            <section id="sectie-foutenlogboek" class="bg-gray-700 p-4 md:p-6 rounded-lg shadow-md">
+                <h2 class="text-xl font-semibold text-white mb-4">Foutenlogboek Beheer</h2>
+                <p class="text-gray-400 mb-4">Overzicht en beheer van gemelde fouten in de `FoutenLogboek` lijst.</p>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full editable-table">
+                        <thead class="bg-gray-600">
+                            <tr>
+                                <th class="text-left text-xs font-medium text-gray-300 uppercase tracking-wider">ID</th>
+                                <th class="text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Titel</th>
+                                <th class="text-left text-xs font-medium text-gray-300 uppercase tracking-wider">FoutBeschrijving</th>
+                                <th class="text-left text-xs font-medium text-gray-300 uppercase tracking-wider">FoutCode</th>
+                                <th class="text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Behandelplan</th>
+                                <th class="text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Acties</th>
+                            </tr>
+                        </thead>
+                        <tbody id="foutenlogboek-tabel-body" class="divide-y divide-gray-600">
+                            </tbody>
+                    </table>
+                </div>
+                <div id="foutenlogboek-status" class="mt-3 text-sm"></div>
+            </section>
+            
+            </main>
+
+        <footer class="text-center mt-8 md:mt-12 py-4 border-t border-gray-700">
+            <a href="../Verlofrooster.aspx" class="text-sm text-blue-400 hover:text-blue-300 hover:underline">
+                &larr; Terug naar het Verlofrooster
+            </a>
+            <p class="text-xs text-gray-500 mt-2">&copy; <span id="current-year"></span> Verlofrooster Applicatie</p>
+        </footer>
+    </div>
+
+    <div id="admin-modal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 p-4">
+        <div class="bg-gray-800 p-5 md:p-6 rounded-lg shadow-xl w-full max-w-xl transform transition-all scale-95 opacity-0">
+            <div class="flex justify-between items-center mb-4">
+                <h3 id="admin-modal-title" class="text-lg font-semibold text-white">Details / Bewerken</h3>
+                <button id="admin-modal-close-x" class="text-gray-400 hover:text-white transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            <form id="admin-modal-form" class="space-y-4">
+                <div id="admin-modal-fields-container">
+                    </div>
+                <div id="admin-modal-status" class="mt-3 text-sm"></div>
+            </form>
+            <div class="mt-6 flex justify-end space-x-3">
+                <button id="admin-modal-cancel-button" class="bg-gray-600 hover:bg-gray-500 text-white py-2 px-4 rounded-lg text-sm shadow hover:shadow-md transition-all">Annuleren/Sluiten</button>
+                <button id="admin-modal-save-button" class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg text-sm shadow hover:shadow-md transition-all">Opslaan</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/configLijst.js"></script>
+    <script src="JS/adminCentrum_logic.js"></script> 
+
+</body>
+</html>
+
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zittingvrij Melden - Verlofrooster</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/meldingZittingsvrij_styles.css">
+    <link rel="stylesheet" href="../css/enhanced_styles.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Basic scrollbar styling, can be enhanced in meldingZittingsvrij_styles.css or a global CSS */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        /* Styles for input fields, consistent with other forms */
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 0.625rem; /* p-2.5 */
+            border-radius: 0.375rem; /* rounded-md */
+            border-width: 1px;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* shadow-sm */
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+        /* Styling for hidden recurring fields container */
+        .recurring-fields-container.hidden {
+            display: none;
+        }
+    </style>
+
+<!--[if gte mso 9]><SharePoint:CTFieldRefs runat=server Prefix="mso:" FieldList="FileLeafRef,TaxCatchAllLabel,Opmerrking_x0020_over_x0020_bestand"><xml>
+<mso:CustomDocumentProperties>
+<mso:Opmerrking_x0020_over_x0020_bestand msdt:dt="string">&lt;div class=&quot;ExternalClassDA8E285E62074DCA87770320AC71D965&quot;&gt;De bestanden met prefix ''melding'' worden niet daadwerkelijk ingeladen als component in het verlofrooster zelf. Deze bestanden bestaan omdat het makkelijker is om een stand-alone pagina te maken en daar een samengevatte modal van te maken voor oinze modals (pop-up formulieren)&lt;br&gt;&lt;/div&gt;</mso:Opmerrking_x0020_over_x0020_bestand>
+</mso:CustomDocumentProperties>
+</xml></SharePoint:CTFieldRefs><![endif]-->
+</head>
+<body class="bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200">
+    <div id="app-container" class="flex flex-col min-h-screen items-center justify-center p-4">
+
+        <div class="w-full max-w-2xl bg-white dark:bg-gray-800 shadow-2xl rounded-xl p-6 md:p-8">
+            <header class="mb-6 text-center">
+                <h1 id="form-title" class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Incidenteel Zittingvrij Melden</h1>
+                <p id="form-subtitle" class="text-gray-600 dark:text-gray-400 mt-1">Vul de gegevens in om een medewerker zittingvrij te melden.</p>
+                <a href="../Verlofrooster.aspx" class="text-sm text-blue-600 dark:text-blue-400 hover:underline mt-2 inline-block">&larr; Terug naar het rooster</a>
+            </header>
+
+            <form id="zittingvrij-form" class="space-y-6">
+                <input type="hidden" id="form-titel" name="Titel">
+
+                <fieldset class="border border-gray-300 dark:border-gray-600 p-4 rounded-lg">
+                    <legend class="text-sm font-semibold px-2 text-gray-700 dark:text-gray-300">Medewerker Informatie</legend>
+                    <div>
+                        <label for="form-gebruikersnaam" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Gebruikersnaam (Medewerker)</label>
+                        <input type="text" id="form-gebruikersnaam" name="Gebruikersnaam"
+                               class="form-input bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed"
+                               placeholder="Wordt automatisch gevuld" readonly>
+                        </div>
+                </fieldset>
+
+                <fieldset class="border border-gray-300 dark:border-gray-600 p-4 rounded-lg">
+                    <legend class="text-sm font-semibold px-2 text-gray-700 dark:text-gray-300">Periode Zittingvrij</legend>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="form-start-datum" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Startdatum <span class="text-red-500">*</span></label>
+                            <input type="date" id="form-start-datum" name="startDatum" class="form-input dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200" required>
+                        </div>
+                        <div>
+                            <label for="form-start-tijd" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Starttijd <span class="text-red-500">*</span></label>
+                            <input type="time" id="form-start-tijd" name="startTijd" class="form-input dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200" required>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                        <div>
+                            <label for="form-eind-datum" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Einddatum <span class="text-red-500">*</span></label>
+                            <input type="date" id="form-eind-datum" name="eindDatum" class="form-input dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200" required>
+                        </div>
+                        <div>
+                            <label for="form-eind-tijd" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Eindtijd <span class="text-red-500">*</span></label>
+                            <input type="time" id="form-eind-tijd" name="eindTijd" class="form-input dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200" required>
+                        </div>
+                    </div>
+                </fieldset>
+
+                <fieldset class="border border-gray-300 dark:border-gray-600 p-4 rounded-lg">
+                    <legend class="text-sm font-semibold px-2 text-gray-700 dark:text-gray-300">Details</legend>
+                    <div>
+                        <label for="form-opmerking" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Opmerking (intern, voor Beheer)</label>
+                        <textarea id="form-opmerking" name="Opmerking" rows="3" class="form-textarea dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200" placeholder="Reden of aanvullende details..."></textarea>
+                    </div>
+                </fieldset>
+
+                <fieldset class="border border-gray-300 dark:border-gray-600 p-4 rounded-lg">
+                    <legend class="text-sm font-semibold px-2 text-gray-700 dark:text-gray-300">Herhaling</legend>
+                    <div class="flex items-center mt-2 mb-4">
+                        <input id="form-terugkerend" name="Terugkerend" type="checkbox" class="h-4 w-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                        <label for="form-terugkerend" class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">Terugkerend evenement</label>
+                    </div>
+
+                    <div id="recurring-fields-container" class="space-y-4 hidden"> <div>
+                            <label for="form-terugkeerpatroon" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Terugkeerpatroon</label>
+                            <select id="form-terugkeerpatroon" name="TerugkeerPatroon" class="form-select dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
+                                <option value="">Niet herhalen</option>
+                                <option value="Dagelijks">Dagelijks</option>
+                                <option value="Wekelijks">Wekelijks (zelfde dag v/d week)</option>
+                                <option value="Maandelijks">Maandelijks (zelfde dag v/d maand)</option>
+                                </select>
+                        </div>
+                        <div>
+                            <label for="form-terugkerend-tot" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Herhalen tot en met</label>
+                            <input type="date" id="form-terugkerend-tot" name="TerugkerendTot" class="form-input dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
+                        </div>
+                    </div>
+                </fieldset>
+                
+                <div class="flex items-center justify-end pt-4 border-t border-gray-300 dark:border-gray-600 space-x-3">
+                    <button type="button" id="annuleren-button"
+                        class="text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 focus:ring-4 focus:outline-none focus:ring-gray-300 dark:focus:ring-gray-700 font-medium rounded-lg text-sm px-5 py-2.5 text-center">
+                        Annuleren
+                    </button>
+                    <button type="submit" id="indienen-button"
+                        class="text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center">
+                        Opslaan
+                    </button>
+                </div>
+            </form>
+            
+            <div id="status-bericht" class="hidden mt-6 p-4 text-sm rounded-lg">
+                </div>
+
+        </div> <footer class="text-center mt-8 text-xs text-gray-500 dark:text-gray-400">
+            <p>&copy; <span id="current-year"></span> Verlofrooster Applicatie</p>
+        </footer>    </div> <script src="../js/configLijst.js"></script> 
+    <script src="../js/machtigingen.js"></script>
+    <script src="../js/ui_utilities.js"></script>
+    <script src="js/meldingZittingsvrij_logic.js"></script>
+</body>
+</html>
+
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback Portaal - Verlofrooster</title>
+	<link rel="icon" type="image/svg+xml" href="../Icoon/favicon.svg">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/meldingMaken_styles.css">
+    <style>
+        /* Minimale inline styles, voornamelijk voor basis layout en animaties die niet direct thema-afhankelijk zijn */
+        body {
+            font-family: 'Inter', sans-serif;
+            /* Thema-specifieke achtergrond en tekstkleur worden beheerd door meldingMaken_styles.css */
+        }
+        /* De JS-geïnjecteerde banner zal via meldingMaken_styles.css worden gestyled om niet als een paginabanner te ogen */
+    </style>
+</head>
+<body class="light-theme">
+    <div id="page-banner" class="bg-gradient-to-r from-blue-600 to-blue-700 dark:from-gray-800 dark:to-gray-900 text-white p-6 md:p-8 shadow-lg">
+        <div class="container mx-auto max-w-4xl">
+            <div class="flex flex-col sm:flex-row justify-between items-center">
+                <div class="flex items-center mb-4 sm:mb-0">
+                    <svg class="w-10 h-10 sm:w-12 sm:h-12 mr-3 sm:mr-4 text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clip-rule="evenodd"></path>
+                    </svg>
+                    <div>
+                        <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-white">Feedback Portaal</h1>
+                        <p class="mt-1 text-blue-100 dark:text-gray-300 text-sm md:text-base">Meld dingen die niet werken of beter kunnen! :)</p>
+                    </div>
+                </div>
+                <a href="../verlofRooster.aspx" class="btn btn-secondary bg-white/20 hover:bg-white/30 dark:bg-gray-700/50 dark:hover:bg-gray-600/60 text-white dark:text-gray-200 text-sm flex items-center gap-2 border-none shadow-md hover:shadow-lg px-4 py-2 rounded-md">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                    Terug naar Rooster
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div id="app-container" class="container mx-auto p-4 md:p-6 max-w-4xl mt-[-2rem] md:mt-[-2.5rem]">
+        <div class="bg-white dark:bg-gray-800 shadow-xl rounded-lg mb-8 overflow-hidden">
+            <div class="relative"> <button id="theme-toggle" type="button" title="Wissel thema"
+                        class="absolute top-4 right-4 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 rounded-lg text-sm p-2.5 z-10">
+                    <svg id="theme-toggle-dark-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
+                    <svg id="theme-toggle-light-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm-.707 10.607a1 1 0 011.414-1.414l-.707-.707a1 1 0 01-1.414 1.414l.707.707zm12.728 0l.707-.707a1 1 0 00-1.414-1.414l-.707.707a1 1 0 001.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" fill-rule="evenodd" clip-rule="evenodd"></path></svg>
+                </button>
+
+                <div class="px-4 md:px-6 pt-6 md:pt-8"> <section id="bestaande-feedback-sectie" class="mb-10">
+                        <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+                     
+                            <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 w-full sm:w-auto">
+                                <select id="feedback-filter" class="form-input text-sm py-2 px-3 w-full sm:w-auto">
+                                    <option value="all">Alle feedback</option>
+                                    <option value="mine">Mijn feedback</option>
+                                    <option value="nieuw">Status: Nieuw</option>
+                                    <option value="in-behandeling">Status: In behandeling</option>
+                                    <option value="opgelost">Status: Opgelost</option>
+                                </select>
+                                <select id="feedback-sort" class="form-input text-sm py-2 px-3 w-full sm:w-auto">
+                                    <option value="newest">Nieuwste eerst</option>
+                                    <option value="oldest">Oudste eerst</option>
+                                    <option value="status">Op status</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div id="feedback-loading-indicator" class="text-center py-6">
+                            <div class="inline-flex items-center">
+                                <svg class="animate-spin -ml-1 mr-3 h-6 w-6 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                <p class="text-gray-600 dark:text-gray-400 text-base">Feedback items laden...</p>
+                            </div>
+                        </div>
+                        
+                        <div id="feedback-items-container" class="space-y-4">
+                            </div>
+                        
+                        <div id="geen-feedback-bericht" class="hidden text-center py-10">
+                            <svg class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" /></svg>
+                            <p class="mt-3 text-lg font-medium text-gray-700 dark:text-gray-300">Geen feedback items gevonden</p>
+                            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Pas de filters aan of wees de eerste die feedback geeft.</p>
+                        </div>
+                    </section>
+
+                    <section id="nieuwe-feedback-sectie" class="border-t border-gray-300 dark:border-gray-700 pt-8">
+                        <h2 class="text-xl md:text-2xl font-semibold text-gray-900 dark:text-white mb-6 text-center">
+                            Nieuwe Feedback Toevoegen
+                        </h2>
+
+                        <form id="melding-form" class="space-y-6 max-w-2xl mx-auto">
+                            <input type="hidden" id="melding-type" name="meldingType" value="Feedback">
+
+                            <fieldset class="border border-gray-300 dark:border-gray-600 p-4 rounded-lg">
+                                <legend class="text-sm font-semibold px-2 text-gray-700 dark:text-gray-300">Uw Gegevens</legend>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                                    <div>
+                                        <label for="medewerker-naam" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Naam</label>
+                                        <input type="text" id="medewerker-naam" name="medewerkerNaam" class="form-input bg-gray-100 dark:bg-gray-700 cursor-not-allowed" readonly>
+                                    </div>
+                                    <div>
+                                        <label for="medewerker-team" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Team</label>
+                                        <input type="text" id="medewerker-team" name="medewerkerTeam" class="form-input bg-gray-100 dark:bg-gray-700 cursor-not-allowed" readonly>
+                                    </div>
+                                </div>
+                            </fieldset>
+
+                            <fieldset class="border border-gray-300 dark:border-gray-600 p-4 rounded-lg">
+                                <legend class="text-sm font-semibold px-2 text-gray-700 dark:text-gray-300">Feedback Details</legend>
+                                <input type="hidden" id="feedback-titel" name="feedbackTitel"> 
+                                <div class="mt-2">
+                                    <label for="feedback-waarfout" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Onderwerp / Locatie</label>
+                                    <input type="text" id="feedback-waarfout" name="feedbackWaarFout" class="form-input" list="fout-locaties" placeholder="Bijv. VerlofRooster pagina, Profielkaart">
+                                    <datalist id="fout-locaties">
+                                        <option value="VerlofRooster pagina"></option>
+                                        <option value="Profielkaart"></option>
+                                        <option value="Melding maken"></option>
+                                        <option value="Admin Centrum"></option>
+                                        <option value="Beheer Centrum"></option>
+                                        <option value="Algemeen"></option>
+                                    </datalist>
+                                </div>
+                                <div class="mt-4">
+                                    <label for="feedback-beschrijving" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Beschrijving van uw feedback <span class="text-red-500">*</span></label>
+                                    <textarea id="feedback-beschrijving" name="feedbackBeschrijving" rows="5" class="form-input" required></textarea>
+                                </div>
+                            </fieldset>
+                            
+                            <div class="flex items-center justify-end pt-4 space-x-3">
+                                <button type="button" id="annuleren-button" class="btn btn-secondary">
+                                    Annuleren
+                                </button>
+                                <button type="submit" id="indienen-button" class="btn btn-primary">
+                                    Feedback Indienen
+                                </button>
+                            </div>
+                        </form>
+                    </section>
+                    <div id="status-bericht" class="hidden mt-6 p-4 text-sm rounded-lg"></div>
+                </div>
+            </div>
+        </div>
+        
+        <footer class="text-center mt-12 py-6 border-t border-gray-200 dark:border-gray-700">
+            <p class="text-xs text-gray-500 dark:text-gray-400">&copy; <span id="current-year"></span> Verlofrooster Applicatie</p>
+        </footer>
+    </div>
+
+    <script src="../js/configLijst.js"></script>
+    <script src="../js/theme-toggle.js"></script>
+    <script src="JS/meldingMaken_logic.js"></script>
+</body>
+</html>
+
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profielbeheer - Verlofrooster</title>
+	<link rel="icon" type="image/svg+xml" href="../Icoon/favicon.svg">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/profielBeheer_styles.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .step-content { display: none; animation: fadeIn 0.4s ease-out; }
+        .step-content.active { display: block; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .toggle-switch { position: relative; display: inline-block; width: 42px; height: 24px; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e0; transition: .3s; border-radius: 24px; }
+        .toggle-slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
+        input:checked + .toggle-slider { background-color: var(--primary-licht, #3b82f6); }
+        input:checked + .toggle-slider:before { transform: translateX(18px); }
+    </style>
+</head>
+<body class="light-theme">
+    <div id="page-banner" class="bg-gradient-to-r from-blue-600 to-blue-700 dark:from-gray-800 dark:to-gray-900 text-white p-6 md:p-8 shadow-lg">
+        <div class="container mx-auto max-w-4xl">
+            <div class="flex justify-between items-center">
+                <h1 class="text-3xl md:text-4xl font-bold">Profielbeheer</h1>
+                <a href="../verlofRooster.aspx" class="btn btn-secondary bg-white/20 hover:bg-white/30 dark:bg-gray-700/50 dark:hover:bg-gray-600/60 text-white dark:text-gray-200 text-sm flex items-center gap-2 border-none shadow-md hover:shadow-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                    Terug naar Rooster
+                </a>
+            </div>
+            <p class="mt-2 text-blue-100 dark:text-gray-300 text-sm md:text-base">Voltooi je registratie om gebruik te maken van het verlofrooster.</p>
+        </div>
+    </div>
+
+    <div id="app-container" class="container mx-auto p-4 md:p-6 max-w-4xl mt-[-2rem] md:mt-[-2.5rem]">
+        <div class="tab-wrapper-card bg-white dark:bg-gray-800 shadow-xl rounded-lg p-0 md:p-0 mb-8 overflow-hidden">
+            <div class="px-4 md:px-6 pt-4 md:pt-5">
+                <div class="step-indicator-container">
+                    <div id="step-indicator-1" class="step-indicator active">
+                        <div class="step-circle">1</div>
+                        <span>Persoonlijke Info</span>
+                    </div>
+                    <div id="step-indicator-2" class="step-indicator">
+                        <div class="step-circle">2</div>
+                        <span>Rooster Setup</span>
+                    </div>
+                    <div id="step-indicator-3" class="step-indicator">
+                        <div class="step-circle">3</div>
+                        <span>Werkrooster</span>
+                    </div>
+                </div>
+            </div>
+            <div class="p-4 md:p-6">
+                <div id="step-1-content" class="step-content active">
+                    <h2 class="text-xl font-semibold mb-6 text-gray-800 dark:text-gray-100">Stap 1: Persoonlijke Informatie</h2>
+                    <form id="persoonlijke-info-form" class="space-y-6">
+                        <div class="flex flex-col items-center sm:flex-row sm:items-start sm:space-x-6">
+                            <div class="profile-picture-container mb-4 sm:mb-0 flex-shrink-0">
+                                <img id="pg-profile-pic" src="https://placehold.co/100x100/e2e8f0/334155?text=Foto" alt="Profielfoto" class="transition-all duration-300">
+                            </div>
+                            <div class="flex-grow space-y-4 w-full">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label for="pg-voornaam" class="block text-sm font-medium mb-1.5 text-gray-700 dark:text-gray-300">Voornaam</label>
+                                        <input type="text" id="pg-voornaam" name="voornaam" class="form-input mt-1 w-full" required>
+                                    </div>
+                                    <div>
+                                        <label for="pg-achternaam" class="block text-sm font-medium mb-1.5 text-gray-700 dark:text-gray-300">Achternaam</label>
+                                        <input type="text" id="pg-achternaam" name="achternaam" class="form-input mt-1 w-full" required>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label for="pg-username" class="block text-sm font-medium mb-1.5 text-gray-700 dark:text-gray-300">Gebruikersnaam (Login)</label>
+                                    <input type="text" id="pg-username" name="username" class="form-input mt-1 w-full cursor-not-allowed opacity-75" readonly>
+                                </div>
+                                <div>
+                                    <label for="pg-email" class="block text-sm font-medium mb-1.5 text-gray-700 dark:text-gray-300">E-mailadres</label>
+                                    <input type="email" id="pg-email" name="email" class="form-input mt-1 w-full cursor-not-allowed opacity-75" readonly>
+                                </div>
+                                <div>
+                                    <label for="pg-telefoon" class="block text-sm font-medium mb-1.5 text-gray-700 dark:text-gray-300">Telefoonnummer</label>
+                                    <input type="tel" id="pg-telefoon" name="telefoon" class="form-input mt-1 w-full" placeholder="Je telefoonnummer (optioneel)">
+                                </div>
+                                <div>
+                                    <label for="pg-geboortedatum" class="block text-sm font-medium mb-1.5 text-gray-700 dark:text-gray-300">Geboortedatum</label>
+                                    <input type="date" id="pg-geboortedatum" name="geboortedatum" class="form-input mt-1 w-full">
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label for="pg-team" class="block text-sm font-medium mb-1.5 text-gray-700 dark:text-gray-300">Team</label>
+                                        <select id="pg-team" name="team" class="form-select mt-1 w-full">
+                                            <option value="">Laden...</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label for="pg-functie" class="block text-sm font-medium mb-1.5 text-gray-700 dark:text-gray-300">Functie</label>
+                                        <select id="pg-functie" name="functie" class="form-select mt-1 w-full">
+                                            <option value="">Laden...</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="pt-6 flex justify-end border-t border-gray-200 dark:border-gray-700 mt-8">
+                            <button type="button" id="next-step-1-button" class="btn btn-primary">
+                                Volgende
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ml-2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                            </button>
+                        </div>
+                    </form>
+                    <div id="persoonlijke-info-status-bericht" class="hidden status-message mt-4"></div>
+                </div>
+
+                <div id="step-2-content" class="step-content"> 
+                    <h2 class="text-xl font-semibold mb-6 text-gray-800 dark:text-gray-100">Stap 2: Rooster Weergave Instellingen</h2>
+                    <form id="rooster-instellingen-form" class="space-y-6">
+                        <div>
+                            <label for="inst-thema" class="block text-sm font-medium mb-1.5 text-gray-700 dark:text-gray-300">Thema Voorkeur</label>
+                            <select id="inst-thema" name="soortWeergave" class="form-select mt-1 w-full">
+                                <option value="light">Licht Thema</option>
+                                <option value="dark">Donker Thema</option>
+                            </select>
+                        </div>
+                        
+                        <div class="space-y-3 pt-2">
+                            <div class="toggle-row-container flex items-center justify-between p-3.5 rounded-md shadow-sm">
+                                <label for="inst-eigen-team" class="text-sm text-gray-700 dark:text-gray-300 mr-3">Standaard alleen eigen team tonen in rooster</label>
+                                <label class="toggle-switch flex-shrink-0">
+                                    <input type="checkbox" id="inst-eigen-team" name="eigenTeamWeergeven">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            
+                            <div class="toggle-row-container flex items-center justify-between p-3.5 rounded-md shadow-sm">
+                                <label for="inst-weekenden" class="text-sm text-gray-700 dark:text-gray-300 mr-3">Weekenden (za/zo) weergeven in het rooster</label>
+                                <label class="toggle-switch flex-shrink-0">
+                                    <input type="checkbox" id="inst-weekenden" name="weekendenWeergeven">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="pt-6 flex justify-between border-t border-gray-200 dark:border-gray-700 mt-8">
+                             <button type="button" id="prev-step-2-button" class="btn btn-secondary">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                                Vorige
+                            </button>
+                            <button type="button" id="next-step-2-button" class="btn btn-primary">
+                                Volgende
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ml-2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                            </button>
+                        </div>
+                    </form>
+                    <div id="instellingen-status-bericht" class="hidden status-message mt-4"></div>
+                </div>
+
+                <div id="step-3-content" class="step-content">
+                    <h2 class="text-xl font-semibold mb-6 text-gray-800 dark:text-gray-100">Stap 3: Standaard Werkrooster</h2>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                        Stel hieronder je standaard werkdagen en -tijden in. De codes 'VVO', 'VVM', 'VVD' zullen worden weergeven in het rooster. Het is belangrijk dat je je werktijden regelmatig bijwerkt.
+                    </p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mb-6">
+                        Tip: Gebruik de globale tijdinstelling hieronder om snel alle dagen dezelfde werktijden te geven en pas daarna aan wat aangepast moet worden.
+                    </p>
+                    
+                    <div id="standaard-werkdagen-edit-container" class="space-y-6">
+                         <div class="werkrooster-form-card p-4 sm:p-6 rounded-lg shadow-md">
+                            <div class="mb-6 pb-4 border-b border-gray-200 dark:border-gray-700">
+                                <h4 class="text-md font-semibold text-gray-700 dark:text-gray-200 mb-2">Globale Tijdinstelling</h4>
+                                <div class="flex flex-col sm:flex-row items-center gap-3">
+                                    <div class="flex-1 w-full sm:w-auto">
+                                        <label for="global-start-time" class="sr-only">Globale Starttijd</label>
+                                        <input type="time" id="global-start-time" class="form-input w-full text-sm" title="Globale starttijd">
+                                    </div>
+                                    <div class="flex-1 w-full sm:w-auto">
+                                        <label for="global-end-time" class="sr-only">Globale Eindtijd</label>
+                                        <input type="time" id="global-end-time" class="form-input w-full text-sm" title="Globale eindtijd">
+                                    </div>
+                                    <button type="button" id="apply-global-time-button" class="btn btn-secondary btn-sm w-full sm:w-auto text-xs">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="mr-1.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                        Toepassen op alle dagen
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="werkdagen-edit-form-profiel" class="space-y-3">
+                                <div class="grid grid-cols-1 md:grid-cols-6 gap-x-3 gap-y-2 items-center p-2 font-semibold text-xs text-gray-600 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700 mb-1">
+                                    <span class="md:col-span-1">Dag</span>
+                                    <span class="md:col-span-1 text-center">Starttijd</span>
+                                    <span class="md:col-span-1 text-center">Eindtijd</span>
+                                    <span class="md:col-span-1 text-center">Vrije dag</span>
+                                    <span class="md:col-span-1 text-center">Berekende Soort</span>
+                                    <span class="md:col-span-1 text-center">Totaal Uren</span> 
+                                </div>
+                                <div class="text-center py-8 text-gray-500 dark:text-gray-400 italic">
+                                    Werkrooster invoervelden worden hier geladen...
+                                </div>
+                            </div>
+                            <div class="text-xs text-gray-500 dark:text-gray-400 mt-4">
+                                Selecteer 'Vrije dag' als je op een dag niet werkt. Tijden zijn dan niet nodig.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-8 flex justify-between border-t border-gray-200 dark:border-gray-700 mt-8">
+                         <button type="button" id="prev-step-3-button" class="btn btn-secondary">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                            Vorige
+                        </button>
+                        <button type="button" id="complete-registration-button" class="btn btn-success">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                            Registratie Voltooien
+                        </button>
+                    </div>
+                    <div id="werkrooster-status-bericht" class="hidden status-message mt-4"></div>
+                </div>
+            </div>
+            </div>
+
+        <footer class="text-center mt-10 py-6 border-t border-gray-200 dark:border-gray-700">
+            <p class="text-xs text-gray-500 dark:text-gray-400">&copy; <span id="current-year"></span> Verlofrooster Applicatie</p>
+        </footer>
+    </div>
+
+    <script src="../js/configLijst.js"></script>
+    <script src="js/profielBeheer_logic.js"></script>
+</body>
+</html>
+
+
+
+<!DOCTYPE html>
+<html lang="nl" xmlns:mso="urn:schemas-microsoft-com:office:office" xmlns:msdt="uuid:C2F41010-65B3-11d1-A29F-00AA00C14882">
+<%@ Register Tagprefix="SharePoint" Namespace="Microsoft.SharePoint.WebControls" Assembly="Microsoft.SharePoint, Version=16.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verlof Aanvragen</title>
+</head>
+<body class="verlof-modal-body"> <!-- Added class for scoping -->
+    <!-- Removed app-header as it's not needed in modal -->
+    <div class="form-container">
+        <form id="verlof-form" class="verlof-form" novalidate>
+            <div class="form-header">
+                <h2 class="form-title">Verlofaanvraag Indienen</h2>
+                <!-- Removed back-link as it's not relevant in modal -->
+            </div>
+
+            <!-- Notification area for form messages -->
+            <div id="modal-notification-area"></div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="MedewerkerDisplay" class="form-label">Medewerker</label>
+                    <input type="text" id="MedewerkerDisplay" name="MedewerkerDisplay" class="form-input" readonly title="Uw naam zoals bekend in het systeem.">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="StartDatePicker" class="form-label required">Startdatum</label>
+                    <input type="date" id="StartDatePicker" name="StartDatePicker" class="form-input" required title="Selecteer de startdatum van uw verlof.">
+                </div>
+                <div class="form-group">
+                    <label for="StartTimePicker" class="form-label required">Starttijd</label>
+                    <input type="time" id="StartTimePicker" name="StartTimePicker" class="form-input" value="09:00" required title="Selecteer de starttijd van uw verlof.">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="EndDatePicker" class="form-label required">Einddatum</label>
+                    <input type="date" id="EndDatePicker" name="EndDatePicker" class="form-input" required title="Selecteer de einddatum van uw verlof.">
+                </div>
+                <div class="form-group">
+                    <label for="EndTimePicker" class="form-label required">Eindtijd</label>
+                    <input type="time" id="EndTimePicker" name="EndTimePicker" class="form-input" value="17:00" required title="Selecteer de eindtijd van uw verlof.">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="Reden" class="form-label required">Verlofreden</label>
+                <select id="Reden" name="Reden" class="form-select" required title="Kies de reden voor uw verlofaanvraag.">
+                    <option value="">-- Kies een reden --</option>
+                    </select>
+            </div>
+
+            <div class="form-group">
+                <label for="Omschrijving" class="form-label">Omschrijving (optioneel)</label>
+                <textarea id="Omschrijving" name="Omschrijving" class="form-textarea" placeholder="Eventuele toelichting, bijv. specifieke details over gedeeltelijke dag." title="Geef hier eventueel een extra toelichting op uw verlofaanvraag."></textarea>
+            </div>
+
+            <div class="form-actions">
+                <a href="../verlofRooster.aspx" class="btn btn-secondary">Annuleren</a>
+                <button type="submit" id="submit-button" class="btn btn-primary">Verstuur Aanvraag</button>
+            </div>
+        </form>
+    </div>
+    <!-- <script src="../js/ui_utilities.js"></script> --> <!-- Not needed if functions are globally available or passed -->
+    <!-- <script src="js/meldingVerlof_logic.js"></script> --> <!-- Logic will be called from parent modal script -->
+</body>
+</html>
+
+
+
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compensatie-uren Indienen</title>
+    <link rel="stylesheet" href="../css/verlofrooster_styles.css">
+    <link rel="stylesheet" href="../css/profielKaart.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* Basis stijlen, geïnspireerd door TailwindCSS utility classes */
+        body {
+            font-family: 'Roboto', 'Inter', sans-serif; /* Roboto toegevoegd als primair lettertype */
+            margin: 0;
+            padding: 0;
+            background-color: #f9fafb; /* gray-50 */
+            color: #1f2937; /* gray-800 */
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        .app-header {
+            background-color: #ffffff; /* white */
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06); /* shadow-md */
+            padding: 1rem; /* p-4 */
+            margin-bottom: 1.5rem; /* mb-6 */
+        }
+        .app-header h1 {
+            font-size: 1.25rem; /* text-xl */
+            font-weight: bold;
+            color: #1f2937; /* gray-800 */
+        }
+        .form-container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; 
+            flex-grow: 1;
+            padding: 1rem; /* p-4 */
+            width: 100%;
+        }
+        .compensatie-form { /* Aangepaste class naam */
+            background: #ffffff; /* white */
+            border-radius: 0.5rem; /* rounded-lg */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* shadow-lg */
+            width: 100%;
+            max-width: 600px; /* max-w-2xl */
+            padding: 1.5rem; /* p-6 */
+            border: 1px solid #e5e7eb; /* border border-gray-200 */
+        }
+        .form-header {
+            margin-bottom: 1.5rem; /* mb-6 */
+            padding-bottom: 1rem; /* pb-4 */
+            border-bottom: 1px solid #e5e7eb; /* border-b border-gray-200 */
+        }
+        .form-title {
+            font-size: 1.25rem; /* text-xl */
+            font-weight: 600; /* font-semibold */
+            color: #111827; /* gray-900 */
+            margin: 0;
+        }
+        .back-link {
+            color: #3b82f6; /* text-blue-500 */
+            text-decoration: none;
+            font-size: 0.875rem; /* text-sm */
+            display: inline-block;
+            margin-top: 0.25rem; /* mt-1 */
+        }
+        .back-link:hover {
+            text-decoration: underline;
+            color: #2563eb; /* text-blue-600 */
+        }
+        .form-group {
+            margin-bottom: 1rem; /* mb-4 */
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(1, minmax(0, 1fr)); /* default to 1 column */
+            gap: 1rem; /* gap-4 */
+        }
+        @media (min-width: 640px) { /* sm breakpoint */
+            .form-row {
+                grid-template-columns: repeat(2, minmax(0, 1fr)); /* 2 columns on sm and up */
+            }
+        }
+        .form-label {
+            display: block;
+            font-size: 0.875rem; /* text-sm */
+            font-weight: 500; /* font-medium */
+            margin-bottom: 0.25rem; /* mb-1 */
+            color: #374151; /* text-gray-700 */
+        }
+        .required:after {
+            content: " *";
+            color: #ef4444; /* text-red-500 */
+        }
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 0.5rem 0.75rem; /* py-2 px-3 */
+            border: 1px solid #d1d5db; /* border-gray-300 */
+            border-radius: 0.375rem; /* rounded-md */
+            font-size: 0.875rem; /* text-sm */
+            box-sizing: border-box;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* shadow-sm */
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+            font-family: inherit; /* Zorgt ervoor dat formulierelementen het body lettertype overnemen */
+        }
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: #3b82f6; /* focus:border-blue-500 */
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); /* focus:ring focus:ring-blue-200 focus:ring-opacity-50 */
+        }
+        .form-input[readonly] {
+            background-color: #f3f4f6; /* bg-gray-100 */
+            color: #6b7280; /* text-gray-500 */
+            cursor: not-allowed;
+        }
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem; /* gap-2 */
+            margin-top: 1.5rem; /* mt-6 */
+            padding-top: 1.5rem; /* pt-6 */
+            border-top: 1px solid #e5e7eb; /* border-t border-gray-200 */
+        }
+        .btn {
+            padding: 0.5rem 1rem; /* py-2 px-4 */
+            border-radius: 0.375rem; /* rounded-md */
+            font-size: 0.875rem; /* text-sm */
+            font-weight: 500; /* font-medium */
+            cursor: pointer;
+            border: none;
+            transition: background-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* shadow-sm */
+            font-family: inherit; /* Knoppen ook het body lettertype */
+        }
+        .btn:hover {
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06); /* shadow-md */
+        }
+        .btn-primary {
+            background-color: #3b82f6; /* bg-blue-500 */
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: #2563eb; /* hover:bg-blue-600 */
+        }
+        .btn-primary:disabled {
+            background-color: #93c5fd; /* bg-blue-300 */
+            cursor: not-allowed;
+        }
+        .btn-secondary {
+            background-color: #e5e7eb; /* bg-gray-200 */
+            color: #4b5563; /* text-gray-600 */
+            border: 1px solid #d1d5db; /* border border-gray-300 */
+        }
+        .btn-secondary:hover {
+            background-color: #d1d5db; /* hover:bg-gray-300 */
+        }
+
+        /* Dark mode styles */
+        body.dark-mode {
+            background-color: #111827; /* dark:bg-gray-900 */
+            color: #f3f4f6; /* dark:text-gray-100 */
+        }
+        body.dark-mode .app-header {
+            background-color: #1f2937; /* dark:bg-gray-800 */
+            box-shadow: 0 1px 3px 0 rgba(0,0,0,0.3), 0 1px 2px 0 rgba(0,0,0,0.2);
+        }
+        body.dark-mode .app-header h1 {
+             color: #f3f4f6; /* dark:text-gray-100 */
+        }
+        body.dark-mode .compensatie-form { /* Aangepaste class naam */
+            background-color: #1f2937; /* dark:bg-gray-800 */
+            border-color: #374151; /* dark:border-gray-700 */
+        }
+        body.dark-mode .form-header {
+            border-bottom-color: #374151; /* dark:border-gray-700 */
+        }
+        body.dark-mode .form-title {
+            color: #f9fafb; /* dark:text-gray-50 */
+        }
+        body.dark-mode .back-link {
+            color: #60a5fa; /* dark:text-blue-400 */
+        }
+        body.dark-mode .back-link:hover {
+            color: #3b82f6; /* dark:text-blue-500 */
+        }
+        body.dark-mode .form-label {
+            color: #d1d5db; /* dark:text-gray-300 */
+        }
+        body.dark-mode .form-input,
+        body.dark-mode .form-select,
+        body.dark-mode .form-textarea {
+            background-color: #374151; /* dark:bg-gray-700 */
+            border-color: #4b5563; /* dark:border-gray-600 */
+            color: #f3f4f6; /* dark:text-gray-100 */
+        }
+        body.dark-mode .form-input::placeholder,
+        body.dark-mode .form-textarea::placeholder {
+            color: #6b7280; /* dark:text-gray-500 */
+        }
+        body.dark-mode .form-input:focus,
+        body.dark-mode .form-select:focus,
+        body.dark-mode .form-textarea:focus {
+            border-color: #60a5fa; /* dark:focus:border-blue-400 */
+            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.3); /* dark:focus:ring-blue-400 dark:focus:ring-opacity-30 */
+        }
+        body.dark-mode .form-input[readonly] {
+            background-color: #4b5563; /* dark:bg-gray-600 */
+            color: #9ca3af; /* dark:text-gray-400 */
+        }
+        body.dark-mode .form-actions {
+            border-top-color: #374151; /* dark:border-gray-700 */
+        }
+        body.dark-mode .btn-primary {
+            background-color: #3b82f6; /* dark:bg-blue-500 */
+        }
+        body.dark-mode .btn-primary:hover {
+            background-color: #2563eb; /* dark:hover:bg-blue-600 */
+        }
+        body.dark-mode .btn-primary:disabled {
+            background-color: #1e40af; /* dark:bg-blue-800 */
+        }
+        body.dark-mode .btn-secondary {
+            background-color: #374151; /* dark:bg-gray-700 */
+            color: #d1d5db; /* dark:text-gray-300 */
+            border-color: #4b5563; /* dark:border-gray-600 */
+        }
+        body.dark-mode .btn-secondary:hover {
+            background-color: #4b5563; /* dark:hover:bg-gray-600 */
+        }
+
+        /* Notification Area */
+        .notification-area {
+            padding: 0.75rem 1rem; /* py-3 px-4 */
+            margin-bottom: 1rem; /* mb-4 */
+            border-radius: 0.375rem; /* rounded-md */
+            font-size: 0.875rem; /* text-sm */
+            border-width: 1px;
+            border-style: solid;
+        }
+        .notification-success {
+            background-color: #d1fae5; /* bg-green-100 */
+            border-color: #6ee7b7; /* border-green-300 */
+            color: #065f46; /* text-green-800 */
+        }
+        body.dark-mode .notification-success {
+            background-color: #052e16; /* dark:bg-green-900 */
+            border-color: #10b981; /* dark:border-green-500 */
+            color: #a7f3d0; /* dark:text-green-200 */
+        }
+        .notification-error {
+            background-color: #fee2e2; /* bg-red-100 */
+            border-color: #fca5a5; /* border-red-300 */
+            color: #991b1b; /* text-red-800 */
+        }
+        body.dark-mode .notification-error {
+            background-color: #450a0a; /* dark:bg-red-900 */
+            border-color: #ef4444; /* dark:border-red-500 */
+            color: #fecaca; /* dark:text-red-200 */
+        }
+        .notification-info {
+            background-color: #e0f2fe; /* bg-sky-100 */
+            border-color: #7dd3fc; /* border-sky-300 */
+            color: #075985; /* text-sky-800 */
+        }
+        body.dark-mode .notification-info {
+            background-color: #0c4a6e; /* dark:bg-sky-900 */
+            border-color: #38bdf8; /* dark:border-sky-500 */
+            color: #bae6fd; /* dark:text-sky-200 */
+        }
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <header class="app-header">
+        <h1>Verlofrooster</h1>
+    </header>
+
+    <div class="form-container">
+        <form id="compensatie-form" class="compensatie-form">
+            <input type="hidden" id="Title" name="Title">
+            <input type="hidden" id="MedewerkerID" name="MedewerkerID">
+            <input type="hidden" id="AanvraagTijdstip" name="AanvraagTijdstip">
+            <input type="hidden" id="Status" name="Status" value="Ingediend">
+            <input type="hidden" id="StartCompensatieUrenISO" name="StartCompensatieUrenISO">
+            <input type="hidden" id="EindeCompensatieUrenISO" name="EindeCompensatieUrenISO">
+
+
+            <div class="form-header">
+                <h2 class="form-title">Compensatie-uren Indienen</h2>
+                <a href="../verlofRooster.aspx" class="back-link" title="Terug naar het volledige verlofrooster">? Terug naar rooster</a>
+            </div>
+
+            <div id="notification-area" class="notification-area hidden" role="alert">
+                </div>
+
+            <div class="form-group">
+                <label for="MedewerkerDisplay" class="form-label">Medewerker</label>
+                <input type="text" id="MedewerkerDisplay" name="MedewerkerDisplay" class="form-input" readonly title="Uw naam zoals bekend in het systeem.">
+            </div>
+
+            <fieldset class="form-group border border-gray-300 dark:border-gray-600 p-4 rounded-md">
+                <legend class="text-sm font-medium text-gray-700 dark:text-gray-300 px-1">Start Compensatie</legend>
+                <div class="form-row mt-2">
+                    <div class="form-group">
+                        <label for="StartCompensatieDatum" class="form-label required">Startdatum</label>
+                        <input type="date" id="StartCompensatieDatum" name="StartCompensatieDatum" class="form-input" required title="Selecteer de startdatum van de compensatie.">
+                    </div>
+                    <div class="form-group">
+                        <label for="StartCompensatieTijd" class="form-label required">Starttijd</label>
+                        <input type="time" id="StartCompensatieTijd" name="StartCompensatieTijd" class="form-input" value="09:00" required title="Selecteer de starttijd van de compensatie.">
+                    </div>
+                </div>
+            </fieldset>
+
+            <fieldset class="form-group border border-gray-300 dark:border-gray-600 p-4 rounded-md">
+                <legend class="text-sm font-medium text-gray-700 dark:text-gray-300 px-1">Einde Compensatie</legend>
+                <div class="form-row mt-2">
+                    <div class="form-group">
+                        <label for="EindeCompensatieDatum" class="form-label required">Einddatum</label>
+                        <input type="date" id="EindeCompensatieDatum" name="EindeCompensatieDatum" class="form-input" required title="Selecteer de einddatum van de compensatie.">
+                    </div>
+                    <div class="form-group">
+                        <label for="EindeCompensatieTijd" class="form-label required">Eindtijd</label>
+                        <input type="time" id="EindeCompensatieTijd" name="EindeCompensatieTijd" class="form-input" value="17:00" required title="Selecteer de eindtijd van de compensatie.">
+                    </div>
+                </div>
+            </fieldset>
+            
+            <div class="form-group">
+                <label for="UrenTotaal" class="form-label">Totaal Uren</label>
+                <input type="text" id="UrenTotaal" name="UrenTotaal" class="form-input" readonly title="Wordt automatisch berekend.">
+            </div>
+
+            <div class="form-group">
+                <label for="Omschrijving" class="form-label required">Omschrijving</label>
+                <textarea id="Omschrijving" name="Omschrijving" class="form-textarea" required placeholder="Geef een duidelijke omschrijving (bijv. project, reden van overwerk)." title="Geef een duidelijke omschrijving voor deze compensatie-uren."></textarea>
+            </div>
+
+            <div class="form-actions">
+                <a href="../verlofRooster.aspx" class="btn btn-secondary">Annuleren</a>
+                <button type="submit" id="submit-button" class="btn btn-primary">Dien Compensatie In</button>
+            </div>
+        </form>
+    </div>
+
+    <script src="../js/configLijst.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Globale variabelen voor deze pagina
+            const spWebAbsoluteUrl = "https://som.org.om.local/sites/MulderT/CustomPW/Verlof";
+
+            let currentUserLoginName = "";
+            let currentUserDisplayName = "";
+            let currentUserNormalizedLoginName = "";
+
+            // DOM Elementen
+            const form = document.getElementById('compensatie-form');
+            const notificationArea = document.getElementById('notification-area');
+            const submitButton = document.getElementById('submit-button');
+
+            const medewerkerDisplayInput = document.getElementById('MedewerkerDisplay');
+            const medewerkerIdInput = document.getElementById('MedewerkerID');
+            const titleInput = document.getElementById('Title');
+            const aanvraagTijdstipInput = document.getElementById('AanvraagTijdstip');
+
+            const startCompensatieDatumInput = document.getElementById('StartCompensatieDatum');
+            const startCompensatieTijdInput = document.getElementById('StartCompensatieTijd');
+            const eindeCompensatieDatumInput = document.getElementById('EindeCompensatieDatum');
+            const eindeCompensatieTijdInput = document.getElementById('EindeCompensatieTijd');
+            
+            const startCompensatieUrenISOInput = document.getElementById('StartCompensatieUrenISO'); // Verborgen
+            const eindeCompensatieUrenISOInput = document.getElementById('EindeCompensatieUrenISO'); // Verborgen
+
+            const urenTotaalInput = document.getElementById('UrenTotaal');
+            const omschrijvingTextarea = document.getElementById('Omschrijving');
+            const statusInput = document.getElementById('Status');
+
+            /**
+             * Utility functie om SharePoint claims prefix van loginnaam te verwijderen.
+             */
+            function trimLoginNaamPrefix(loginNaam) {
+                if (!loginNaam) return '';
+                const prefixesToRemove = ["i:0#.w|", "c:0(.s|true|", "i:05.t|"];
+                for (const prefix of prefixesToRemove) {
+                    if (loginNaam.toLowerCase().startsWith(prefix.toLowerCase())) {
+                        return loginNaam.substring(prefix.length);
+                    }
+                }
+                return loginNaam.startsWith('|') ? loginNaam.substring(1) : loginNaam;
+            }
+
+            /**
+             * Haalt een X-RequestDigest op.
+             */
+            async function getRequestDigest() {
+                console.log("Ophalen Request Digest van:", `${spWebAbsoluteUrl}/_api/contextinfo`);
+                const response = await fetch(`${spWebAbsoluteUrl}/_api/contextinfo`, {
+                    method: 'POST',
+                    headers: { 'Accept': 'application/json;odata=verbose' }
+                });
+                if (!response.ok) {
+                    console.error("Fout bij ophalen request digest:", response.status, await response.text().catch(()=>""));
+                    throw new Error('Kon request digest niet ophalen.');
+                }
+                const data = await response.json();
+                console.log("Request Digest succesvol opgehaald.");
+                return data.d.GetContextWebInformation.FormDigestValue;
+            }
+
+            /**
+             * Toont een notificatie bericht.
+             */
+            function toonNotificatie(bericht, type = 'info', autoHideDelay = 7000) {
+                console.log(`[Notificatie] Type: ${type}, Bericht: ${bericht}`);
+                notificationArea.textContent = bericht;
+                notificationArea.className = 'notification-area'; // Reset classes
+                notificationArea.classList.add(`notification-${type}`);
+                notificationArea.classList.remove('hidden');
+
+                if (notificationArea.timeoutId) clearTimeout(notificationArea.timeoutId);
+                if (autoHideDelay !== false) {
+                    notificationArea.timeoutId = setTimeout(() => {
+                        notificationArea.classList.add('hidden');
+                    }, autoHideDelay);
+                }
+            }
+
+            /**
+             * Initialiseert gebruikersinformatie en thema.
+             */
+            async function initializeGebruikersInfoEnThema() {
+                console.log("Start initialisatie gebruikersinfo en thema voor compensatieformulier.");
+                console.log("Gebruikte SharePoint Web Absolute URL:", spWebAbsoluteUrl);
+
+                try {
+                    const userResponse = await fetch(`${spWebAbsoluteUrl}/_api/web/currentUser?$select=LoginName,Title`, {
+                        headers: { 'Accept': 'application/json;odata=verbose' }
+                    });
+                    if (!userResponse.ok) {
+                        const errorText = await userResponse.text().catch(()=>"");
+                        console.error("Fout bij ophalen gebruikersdata:", userResponse.status, errorText);
+                        throw new Error(`Kon gebruikersdata niet ophalen: ${userResponse.status}`);
+                    }
+                    const userData = await userResponse.json();
+
+                    currentUserLoginName = userData.d.LoginName;
+                    currentUserDisplayName = userData.d.Title;
+                    currentUserNormalizedLoginName = trimLoginNaamPrefix(currentUserLoginName);
+                    console.log(`Huidige gebruiker: ${currentUserDisplayName} (Genormaliseerd: ${currentUserNormalizedLoginName})`);
+
+                    medewerkerDisplayInput.value = currentUserDisplayName;
+                    medewerkerIdInput.value = currentUserNormalizedLoginName;
+
+                    const today = new Date();
+                    const dateStr = today.toLocaleDateString('nl-NL', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                    titleInput.value = `Compensatie ${currentUserDisplayName} - ${dateStr}`;
+                    aanvraagTijdstipInput.value = today.toISOString();
+
+                    // Pas thema toe
+                    const instellingenCfg = getLijstConfig('gebruikersInstellingen');
+                    if (instellingenCfg && instellingenCfg.lijstId) {
+                        const themeApiUrl = `${spWebAbsoluteUrl}/_api/web/lists(guid'${instellingenCfg.lijstId}')/items?$filter=Title eq '${encodeURIComponent(currentUserNormalizedLoginName)}'&$select=soortWeergave`;
+                        const themeResponse = await fetch(themeApiUrl, { headers: { 'Accept': 'application/json;odata=verbose' } });
+                        if (themeResponse.ok) {
+                            const themeData = await themeResponse.json();
+                            if (themeData.d.results.length > 0 && themeData.d.results[0].soortWeergave === 'dark') {
+                                document.body.classList.add('dark-mode');
+                            } else {
+                                document.body.classList.remove('dark-mode');
+                            }
+                        } else { document.body.classList.remove('dark-mode'); }
+                    } else { document.body.classList.remove('dark-mode'); }
+                } catch (error) {
+                    console.error('Fout bij ophalen gebruikersdata of thema:', error);
+                    toonNotificatie('Kon gebruikersinformatie of thema niet laden.', 'error');
+                    medewerkerDisplayInput.value = 'Gebruiker (fout)';
+                    document.body.classList.remove('dark-mode');
+                }
+            }
+            
+            /**
+             * Berekent het totaal aantal uren tussen start- en eindtijd.
+             */
+            function berekenUrenTotaal() {
+                const startDatumValue = startCompensatieDatumInput.value;
+                const startTijdValue = startCompensatieTijdInput.value;
+                const eindDatumValue = eindeCompensatieDatumInput.value;
+                const eindTijdValue = eindeCompensatieTijdInput.value;
+
+                if (startDatumValue && startTijdValue && eindDatumValue && eindTijdValue) {
+                    const startDatumTijd = new Date(`${startDatumValue}T${startTijdValue}`);
+                    const eindDatumTijd = new Date(`${eindDatumValue}T${eindTijdValue}`);
+
+                    if (!isNaN(startDatumTijd.getTime()) && !isNaN(eindDatumTijd.getTime()) && eindDatumTijd > startDatumTijd) {
+                        const verschilInMs = eindDatumTijd - startDatumTijd;
+                        const verschilInUren = verschilInMs / (1000 * 60 * 60);
+                        urenTotaalInput.value = verschilInUren.toFixed(2) + " uur";
+                    } else {
+                        urenTotaalInput.value = "Ongeldige periode";
+                    }
+                } else {
+                    urenTotaalInput.value = "";
+                }
+            }
+
+            /**
+             * Valideert het formulier.
+             */
+            function valideerFormulier() {
+                if (!startCompensatieDatumInput.value || !startCompensatieTijdInput.value || 
+                    !eindeCompensatieDatumInput.value || !eindeCompensatieTijdInput.value || 
+                    !omschrijvingTextarea.value) {
+                    toonNotificatie('Vul alle verplichte velden (*) in.', 'error');
+                    return false;
+                }
+                const startDatumTijd = new Date(`${startCompensatieDatumInput.value}T${startCompensatieTijdInput.value}`);
+                const eindDatumTijd = new Date(`${eindeCompensatieDatumInput.value}T${eindeCompensatieTijdInput.value}`);
+
+                if (isNaN(startDatumTijd.getTime()) || isNaN(eindDatumTijd.getTime())) {
+                    toonNotificatie('Ongeldige datum of tijd ingevoerd.', 'error');
+                    return false;
+                }
+                if (eindDatumTijd <= startDatumTijd) {
+                    toonNotificatie('De einddatum en -tijd moeten na de startdatum en -tijd liggen.', 'error');
+                    return false;
+                }
+                return true;
+            }
+
+            /**
+             * Verwerkt het verzenden van het formulier.
+             */
+            async function handleFormulierVerzenden(e) {
+                e.preventDefault();
+                console.log("Compensatie formulierverwerking gestart...");
+                submitButton.disabled = true;
+                submitButton.textContent = 'Bezig met indienen...';
+                toonNotificatie('Bezig met indienen van uw compensatie...', 'info', false);
+
+                if (!valideerFormulier()) {
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Dien Compensatie In';
+                    return;
+                }
+                
+                // Update aanvraagtijdstip en titel
+                aanvraagTijdstipInput.value = new Date().toISOString();
+                const startDatumVoorTitel = new Date(`${startCompensatieDatumInput.value}T${startCompensatieTijdInput.value}`);
+                const dateStr = startDatumVoorTitel.toLocaleDateString('nl-NL', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                titleInput.value = `Compensatie ${currentUserDisplayName} - ${dateStr}`;
+
+                // Combineer datum en tijd naar ISO strings voor SharePoint
+                const startDateTimeISO = new Date(`${startCompensatieDatumInput.value}T${startCompensatieTijdInput.value}`).toISOString();
+                const eindeDateTimeISO = new Date(`${eindeCompensatieDatumInput.value}T${eindeCompensatieTijdInput.value}`).toISOString();
+                startCompensatieUrenISOInput.value = startDateTimeISO;
+                eindeCompensatieUrenISOInput.value = eindeDateTimeISO;
+
+
+                const compensatieLijstConfig = getLijstConfig('CompensatieUren');
+                if (!compensatieLijstConfig || !compensatieLijstConfig.lijstId || !compensatieLijstConfig.lijstTitel) {
+                    toonNotificatie('Fout: Compensatie kan niet worden verwerkt (configuratie ontbreekt).', 'error', false);
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Dien Compensatie In';
+                    console.error("Configuratie voor 'CompensatieUren' lijst niet gevonden of incompleet.");
+                    return;
+                }
+                const listNameForMetadata = compensatieLijstConfig.lijstTitel.replace(/\s+/g, '_');
+
+                const formDataPayload = {
+                    __metadata: { type: `SP.Data.${listNameForMetadata}ListItem` },
+                    Title: titleInput.value,
+                    Medewerker: medewerkerDisplayInput.value,
+                    MedewerkerID: medewerkerIdInput.value,
+                    AanvraagTijdstip: aanvraagTijdstipInput.value,
+                    StartCompensatieUren: startCompensatieUrenISOInput.value, // Gebruik de ISO string
+                    EindeCompensatieUren: eindeCompensatieUrenISOInput.value, // Gebruik de ISO string
+                    UrenTotaal: urenTotaalInput.value,
+                    Omschrijving: omschrijvingTextarea.value,
+                    Status: statusInput.value // "Ingediend"
+                };
+
+                console.log('Voor te bereiden payload voor SharePoint (CompensatieUren):', JSON.stringify(formDataPayload, null, 2));
+
+                try {
+                    const requestDigest = await getRequestDigest();
+                    const createItemUrl = `${spWebAbsoluteUrl}/_api/web/lists(guid'${compensatieLijstConfig.lijstId}')/items`;
+                    console.log("Versturen van data naar:", createItemUrl);
+
+                    const response = await fetch(createItemUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json;odata=verbose',
+                            'Content-Type': 'application/json;odata=verbose',
+                            'X-RequestDigest': requestDigest
+                        },
+                        body: JSON.stringify(formDataPayload)
+                    });
+
+                    if (!response.ok && response.status !== 201) {
+                        const errorData = await response.json().catch(() => null);
+                        const spErrorMessage = errorData?.error?.message?.value || `Serverfout: ${response.status}`;
+                        console.error("Fout bij opslaan compensatie in SharePoint:", response.status, spErrorMessage, errorData);
+                        throw new Error(`Kon compensatie niet opslaan. ${spErrorMessage}`);
+                    }
+
+                    console.log("Compensatie succesvol opgeslagen in SharePoint.");
+                    toonNotificatie('Compensatie-uren succesvol ingediend!', 'success');
+                    form.reset();
+                    // Herstel standaardwaarden na reset
+                    medewerkerDisplayInput.value = currentUserDisplayName;
+                    medewerkerIdInput.value = currentUserNormalizedLoginName;
+                    const todayForTitle = new Date();
+                    const dateStrForTitle = todayForTitle.toLocaleDateString('nl-NL', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                    titleInput.value = `Compensatie ${currentUserDisplayName} - ${dateStrForTitle}`;
+                    aanvraagTijdstipInput.value = todayForTitle.toISOString();
+                    statusInput.value = "Ingediend";
+                    urenTotaalInput.value = "";
+                    // Reset date/time pickers
+                    setDefaultDateTimes();
+
+
+                } catch (error) {
+                    console.error('Fout bij indienen compensatie:', error);
+                    toonNotificatie(`Fout bij indienen: ${error.message}. Probeer het opnieuw.`, 'error', false);
+                } finally {
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Dien Compensatie In';
+                }
+            }
+            
+            /**
+             * Stelt de standaard datum en tijd in voor de pickers.
+             */
+            function setDefaultDateTimes() {
+                const nu = new Date();
+                const vandaagISO = nu.toISOString().split('T')[0];
+                const nuTijd = nu.toTimeString().slice(0,5); // HH:mm
+
+                startCompensatieDatumInput.value = vandaagISO;
+                startCompensatieTijdInput.value = nuTijd;
+
+                // Standaard eindtijd 1 uur later
+                const eindTijdStandaard = new Date(nu.getTime() + (60 * 60 * 1000));
+                eindeCompensatieDatumInput.value = eindTijdStandaard.toISOString().split('T')[0];
+                eindeCompensatieTijdInput.value = eindTijdStandaard.toTimeString().slice(0,5);
+                
+                berekenUrenTotaal(); // Herbereken uren
+            }
+
+
+            // Event listeners
+            if (form) {
+                form.addEventListener('submit', handleFormulierVerzenden);
+            }
+            // Koppel berekenUrenTotaal aan alle vier de datum/tijd inputs
+            [startCompensatieDatumInput, startCompensatieTijdInput, eindeCompensatieDatumInput, eindeCompensatieTijdInput].forEach(input => {
+                if (input) { // Check of element bestaat
+                    input.addEventListener('change', berekenUrenTotaal);
+                }
+            });
+
+
+            // Start de initialisatie
+            async function initPagina() {
+                toonNotificatie('Pagina initialiseren...', 'info', 2000);
+                try {
+                    await initializeGebruikersInfoEnThema();
+                    setDefaultDateTimes(); // Standaard datums en tijden instellen
+                    console.log("Compensatie pagina initialisatie voltooid.");
+                } catch (initError) {
+                    console.error("Kritieke fout tijdens compensatie pagina initialisatie:", initError);
+                    toonNotificatie("Kon de pagina niet correct initialiseren. Probeer het later opnieuw.", "error", false);
+                }
+            }
+            
+            if (typeof getLijstConfig === 'function' && typeof sharepointLijstConfiguraties !== 'undefined') {
+                initPagina();
+            } else {
+                console.error("configLijst.js of getLijstConfig is niet beschikbaar. Pagina kan niet initialiseren.");
+                toonNotificatie("Kritieke fout: Applicatieconfiguratie kon niet geladen worden.", "error", false);
+            }
+        });
+    </script>
+</body>
+</html>
+
+
+
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gebruikersinstellingen - Verlofrooster</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/gInstellingen_styles.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .tab-button {
+            position: relative;
+            transition: color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+            padding-bottom: 0.75rem; 
+            border-bottom: 3px solid transparent;
+        }
+        .tab-button.active {
+            font-weight: 600;
+            /* Kleuren worden via CSS variabelen en thema klassen beheerd */
+        }
+        /* De ::after pseudo-element voor de underline wordt nu volledig in gInstellingen_styles.css beheerd */
+        
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.4s ease-out;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .toggle-switch { position: relative; display: inline-block; width: 42px; height: 24px; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e0; transition: .3s; border-radius: 24px; }
+        .toggle-slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
+        input:checked + .toggle-slider { background-color: var(--primary-licht, #3b82f6); }
+        input:checked + .toggle-slider:before { transform: translateX(18px); }
+    </style>
+</head>
+<body class="light-theme"> <div id="page-banner" class="bg-gradient-to-r from-blue-600 to-blue-700 dark:from-gray-800 dark:to-gray-900 text-white p-6 md:p-8 shadow-lg">
+        <div class="container mx-auto max-w-4xl">
+            <div class="flex justify-between items-center">
+                <h1 class="text-3xl md:text-4xl font-bold">
+                    Gebruikersinstellingen
+                </h1>
+                <a href="../Verlofrooster.aspx" class="btn btn-secondary bg-white/20 hover:bg-white/30 dark:bg-gray-700/50 dark:hover:bg-gray-600/60 text-white dark:text-gray-200 text-sm flex items-center gap-2 border-none shadow-md hover:shadow-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                    Terug naar Rooster
+                </a>
+            </div>
+            <p class="mt-2 text-blue-100 dark:text-gray-300 text-sm md:text-base">Beheer hier uw persoonlijke gegevens, werkrooster en rooster voorkeuren.</p>
+        </div>
+    </div>
+
+    <div id="app-container" class="container mx-auto p-4 md:p-6 max-w-4xl mt-[-2rem] md:mt-[-2.5rem]">
+        <div class="tab-wrapper-card bg-white dark:bg-gray-800 shadow-xl rounded-lg p-0 md:p-0 mb-8 overflow-hidden">
+            <div class="px-4 md:px-6 border-b border-gray-200 dark:border-gray-700">
+                <nav class="flex flex-wrap -mb-px space-x-2 sm:space-x-4 md:space-x-6" aria-label="Tabs">
+                    <button data-tab="profiel" class="tab-button active py-3 px-2 sm:px-3 md:px-4 inline-flex items-center gap-x-2 text-sm font-medium text-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1 md:mr-2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                        Mijn Profiel
+                    </button>
+                    <button data-tab="werkuren" class="tab-button py-3 px-2 sm:px-3 md:px-4 inline-flex items-center gap-x-2 text-sm font-medium text-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1 md:mr-2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                        Mijn Werktijden
+                    </button>
+                    <button data-tab="instellingen" class="tab-button py-3 px-2 sm:px-3 md:px-4 inline-flex items-center gap-x-2 text-sm font-medium text-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1 md:mr-2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                        Instellingen
+                    </button>
+                </nav>
+            </div>
+
+            <div class="p-4 md:p-6">
+                <div id="tab-content-profiel" class="tab-content active">
+                    <h2 class="text-xl font-semibold mb-6 text-gray-800 dark:text-gray-100">Mijn Profiel</h2>
+                    <form id="persoonlijke-gegevens-form" class="space-y-6">
+                        <div class="flex flex-col items-center sm:flex-row sm:items-start sm:space-x-6">
+                            <div class="profile-picture-container mb-4 sm:mb-0 flex-shrink-0">
+                                <img id="pg-profile-pic" src="https://placehold.co/100x100/e2e8f0/334155?text=Foto" alt="Profielfoto" class="transition-all duration-300">
+                            </div>
+                            <div class="flex-grow space-y-4 w-full">
+                                <div>
+                                    <label for="pg-naam" class="block text-sm font-medium mb-1.5 text-gray-700 dark:text-gray-300">Volledige Naam</label>
+                                    <input type="text" id="pg-naam" name="naam" class="form-input mt-1 w-full">
+                                </div>
+                                <div>
+                                    <label for="pg-username" class="block text-sm font-medium mb-1.5 text-gray-700 dark:text-gray-300">Gebruikersnaam (Login)</label>
+                                    <input type="text" id="pg-username" name="username" class="form-input mt-1 w-full cursor-not-allowed opacity-75" readonly>
+                                </div>
+                                <div>
+                                    <label for="pg-email" class="block text-sm font-medium mb-1.5 text-gray-700 dark:text-gray-300">E-mailadres</label>
+                                    <input type="email" id="pg-email" name="email" class="form-input mt-1 w-full cursor-not-allowed opacity-75" readonly>
+                                </div>
+                                 <div>
+                                    <label for="pg-geboortedatum" class="block text-sm font-medium mb-1.5 text-gray-700 dark:text-gray-300">Geboortedatum</label>
+                                    <input type="date" id="pg-geboortedatum" name="geboortedatum" class="form-input mt-1 w-full">
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label for="pg-team" class="block text-sm font-medium mb-1.5 text-gray-700 dark:text-gray-300">Team</label>
+                                        <select id="pg-team" name="team" class="form-select mt-1 w-full">
+                                            <option value="">Laden...</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label for="pg-functie" class="block text-sm font-medium mb-1.5 text-gray-700 dark:text-gray-300">Functie</label>
+                                        <select id="pg-functie" name="functie" class="form-select mt-1 w-full">
+                                            <option value="">Laden...</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="pt-4 flex justify-end border-t border-gray-200 dark:border-gray-700 mt-6">
+                            <button type="button" id="opslaan-persoonlijke-gegevens-knop" class="btn btn-success">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                                Profiel Opslaan
+                            </button>
+                        </div>
+                    </form>
+                    <div id="persoonlijke-gegevens-status-bericht" class="hidden status-message mt-4"></div>
+                </div>
+    
+                <div id="tab-content-werkuren" class="tab-content">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
+                        <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-2 md:mb-0">
+                            Mijn Werktijden
+                        </h2>
+                        <button type="button" id="wijzig-werkrooster-knop" class="btn btn-primary text-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                            Werkrooster Wijzigen
+                        </button>
+                    </div>
+                    <p class="text-sm mb-5 text-gray-600 dark:text-gray-400">Hieronder ziet u uw huidige standaard werkrooster. Klik op "Werkrooster Wijzigen" om een nieuw werkrooster (met nieuwe ingangsdatum) toe te voegen.</p>
+    
+                    <div id="werkdagen-display-container" class="rounded-lg overflow-x-auto">
+                        <table class="schedule-table min-w-full">
+                            <thead>
+                                <tr>
+                                    <th scope="col" class="w-1/3 md:w-1/4">Dag</th>
+                                    <th scope="col" class="w-1/3 md:w-1/2">Werktijden</th>
+                                    <th scope="col" class="w-1/3 md:w-1/4">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="werkdagen-tabel-body">
+                                <tr>
+                                    <td colspan="3" class="py-6 text-center text-gray-500 dark:text-gray-400 italic">Werkrooster informatie wordt geladen...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p id="rooster-geldig-vanaf" class="text-xs p-3 text-gray-500 dark:text-gray-400 hidden italic text-center"></p>
+                    </div>
+    
+                    <div id="werkrooster-edit-form-container" class="hidden mt-6 space-y-6">
+                        <div>
+                            <label for="werkrooster-wijzigingsdatum" class="block text-sm font-medium mb-1.5 text-gray-700 dark:text-gray-300">Ingangsdatum Nieuw Werkrooster <span class="text-red-500">*</span></label>
+                            <input type="date" id="werkrooster-wijzigingsdatum" name="wijzigingsdatum" class="form-input mt-1 w-full md:w-auto">
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Selecteer de datum vanaf wanneer dit nieuwe rooster geldig is.</p>
+                        </div>
+                        
+                        <div class="werkrooster-form-card p-4 sm:p-6 rounded-lg shadow-sm">
+                             <div class="mb-6 pb-4 border-b border-gray-200 dark:border-gray-700">
+                                <h4 class="text-md font-semibold text-gray-700 dark:text-gray-200 mb-2">Globale Tijdinstelling (voor Ma-Vr)</h4>
+                                <div class="flex flex-col sm:flex-row items-center gap-3">
+                                    <div class="flex-1 w-full sm:w-auto">
+                                        <label for="global-start-time-ginst" class="sr-only">Globale Starttijd</label>
+                                        <input type="time" id="global-start-time-ginst" class="form-input w-full text-sm" title="Globale starttijd">
+                                    </div>
+                                    <div class="flex-1 w-full sm:w-auto">
+                                        <label for="global-end-time-ginst" class="sr-only">Globale Eindtijd</label>
+                                        <input type="time" id="global-end-time-ginst" class="form-input w-full text-sm" title="Globale eindtijd">
+                                    </div>
+                                    <button type="button" id="apply-global-time-button-ginst" class="btn btn-secondary btn-sm w-full sm:w-auto text-xs">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="mr-1.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                        Toepassen op alle dagen
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="werkrooster-input-rows" class="space-y-3">
+                                 <div class="grid grid-cols-1 md:grid-cols-5 gap-x-3 gap-y-2 items-center p-2 font-semibold text-xs text-gray-600 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700 mb-1">
+                                    <span class="md:col-span-1">Dag</span>
+                                    <span class="md:col-span-1 text-center">Starttijd</span>
+                                    <span class="md:col-span-1 text-center">Eindtijd</span>
+                                    <span class="md:col-span-1 text-center">Vrije dag</span>
+                                    <span class="md:col-span-1 text-center">Berekende Soort</span>
+                                </div>
+                                <div class="text-center py-8 text-gray-500 dark:text-gray-400 italic">
+                                    Werkrooster invoervelden worden hier geladen...
+                                </div>
+                            </div>
+                            <div class="text-xs text-gray-500 dark:text-gray-400 mt-3">
+                             Selecteer 'Vrije dag' als u op een dag niet werkt. Tijden zijn dan niet nodig.
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3 mt-6">
+                            <button type="button" id="annuleer-werkrooster-knop" class="btn btn-secondary w-full sm:w-auto">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                Annuleren
+                            </button>
+                            <button type="button" id="opslaan-werkrooster-knop" class="btn btn-success w-full sm:w-auto">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                                Nieuw Werkrooster Opslaan
+                            </button>
+                        </div>
+                        <div id="werkrooster-status-bericht" class="hidden status-message"></div>
+                    </div>
+                </div>
+    
+                <div id="tab-content-instellingen" class="tab-content">
+                    <h2 class="text-xl font-semibold mb-6 text-gray-800 dark:text-gray-100">Rooster Weergave Instellingen</h2>
+                    <form id="rooster-instellingen-form" class="space-y-6">
+                        <div>
+                            <label for="inst-thema" class="block text-sm font-medium mb-1.5 text-gray-700 dark:text-gray-300">Thema Voorkeur</label>
+                            <select id="inst-thema" name="soortWeergave" class="form-select mt-1 w-full">
+                                <option value="light">Licht Thema</option>
+                                <option value="dark">Donker Thema</option>
+                            </select>
+                        </div>
+                        
+                        <div class="space-y-3 pt-2">
+                            <div class="toggle-row-container flex items-center justify-between p-3.5 rounded-md shadow-sm">
+                                <label for="inst-eigen-team" class="text-sm text-gray-700 dark:text-gray-300 mr-3">Standaard alleen eigen team tonen in rooster</label>
+                                <label class="toggle-switch flex-shrink-0">
+                                    <input type="checkbox" id="inst-eigen-team" name="eigenTeamWeergeven">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            
+                            <div class="toggle-row-container flex items-center justify-between p-3.5 rounded-md shadow-sm">
+                                <label for="inst-weekenden" class="text-sm text-gray-700 dark:text-gray-300 mr-3">Weekenden (za/zo) weergeven in het rooster</label>
+                                <label class="toggle-switch flex-shrink-0">
+                                    <input type="checkbox" id="inst-weekenden" name="weekendenWeergeven">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="pt-4 border-t border-gray-200 dark:border-gray-700 mt-6">
+                            <button type="button" id="opslaan-instellingen-button" class="btn btn-primary hidden">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                                Instellingen Opslaan
+                            </button>
+                        </div>
+                    </form>
+                    <div id="instellingen-status-bericht" class="hidden status-message mt-4"></div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="text-center mt-10 py-6 border-t border-gray-200 dark:border-gray-700">
+            <p class="text-xs text-gray-500 dark:text-gray-400">&copy; <span id="current-year"></span> Verlofrooster Applicatie</p>
+        </footer>
+    </div>
+
+    <script src="../js/configLijst.js"></script>
+    <script src="JS/gInstellingen_logic.js"></script>
+</body>
+</html>
+
